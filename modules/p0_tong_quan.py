@@ -227,8 +227,8 @@ def render(df: pd.DataFrame):
             insidetextanchor="start",
             textfont=dict(size=10, color="white"),
         ))
+        fig_bar.update_layout(**CHART_LAYOUT)
         fig_bar.update_layout(
-            **CHART_LAYOUT,
             margin=dict(l=150, r=60, t=30, b=30),
             height=max(280, len(bar_labels) * 38 + 60),
         )
