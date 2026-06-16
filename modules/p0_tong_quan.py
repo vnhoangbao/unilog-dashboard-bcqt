@@ -214,19 +214,29 @@ def render(df: pd.DataFrame):
 
     # ── BAR NGANG — LN Sau Thuế theo đơn vị ─────────────────
     if lnst_by_bu:
-        bu_sorted  = sorted(lnst_by_bu.items(), key=lambda x: x[1], reverse=True)
-        bar_labels = [bu for bu, _ in bu_sorted]
-        bar_x      = [v / 1e9 for _, v in bu_sorted]
-        bar_colors = [COLOR_OK if v >= 0 else COLOR_DANGER for _, v in bu_sorted]
-        bar_texts  = [f"{v/1e9:.2f} Tỷ" for _, v in bu_sorted]
+        # Sort ascending → item lớn nhất nằm trên cùng (Plotly hbar từ dưới lên)
+        sorted_pairs = sorted(lnst_by_bu.items(), key=lambda x: x[1])
+        bar_labels = [bu for bu, _ in sorted_pairs]
+        bar_x      = [v / 1e9 for _, v in sorted_pairs]
+        bar_colors = [COLOR_OK if v >= 0 else COLOR_DANGER for _, v in sorted_pairs]
+        bar_texts  = [f"{v/1e9:.2f} Tỷ" for _, v in sorted_pairs]
+
+        max_abs   = max(abs(v) for v in bar_x) if bar_x else 1
+        threshold = max_abs * 0.12
+        text_positions = [
+            "inside" if abs(v) >= threshold else "outside"
+            for v in bar_x
+        ]
 
         fig_bar = go.Figure(go.Bar(
             x=bar_x, y=bar_labels, orientation="h",
             marker_color=bar_colors,
-            text=bar_texts, textposition="inside",
+            text=bar_texts,
+            textposition=text_positions,
             insidetextanchor="start",
-            textfont=dict(size=10, color="white"),
+            textfont=dict(size=10),
         ))
+        fig_bar.update_traces(cliponaxis=False)
         fig_bar.update_layout(**CHART_LAYOUT)
         fig_bar.update_layout(
             margin=dict(l=150, r=60, t=30, b=30),
