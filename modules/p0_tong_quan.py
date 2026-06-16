@@ -223,19 +223,14 @@ def render(df: pd.DataFrame):
         fig_bar = go.Figure(go.Bar(
             x=bar_x, y=bar_labels, orientation="h",
             marker_color=bar_colors,
-            text=bar_texts, textposition="outside",
-            textfont=dict(size=10),
-            cliponaxis=False,
+            text=bar_texts, textposition="inside",
+            insidetextanchor="start",
+            textfont=dict(size=10, color="white"),
         ))
         fig_bar.update_layout(
             **CHART_LAYOUT,
-            title=dict(text="LN Sau Thuế theo Đơn vị", font=dict(size=13)),
+            margin=dict(l=150, r=60, t=30, b=30),
             height=max(280, len(bar_labels) * 38 + 60),
-            xaxis_title="Tỷ đồng",
-            yaxis=dict(autorange="reversed"),
-            showlegend=False,
-            margin=dict(l=160, r=80, t=40, b=40),
-            uniformtext=dict(minsize=9, mode="hide"),
         )
         apply_chart_style(fig_bar, horizontal=True)
         st.plotly_chart(fig_bar, use_container_width=True)
