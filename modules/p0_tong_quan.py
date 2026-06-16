@@ -214,18 +214,24 @@ def render(df: pd.DataFrame):
 
     # ── BAR NGANG — LN Sau Thuế theo đơn vị ─────────────────
     if lnst_by_bu:
-        # Sort ascending → item lớn nhất nằm trên cùng (Plotly hbar từ dưới lên)
-        sorted_pairs = sorted(lnst_by_bu.items(), key=lambda x: x[1])
-        bar_labels = [bu for bu, _ in sorted_pairs]
-        bar_x      = [v / 1e9 for _, v in sorted_pairs]
-        bar_colors = [COLOR_OK if v >= 0 else COLOR_DANGER for _, v in sorted_pairs]
-        bar_texts  = [f"{v/1e9:.2f} Tỷ" for _, v in sorted_pairs]
+        # Sort ascending: -7.41 đầu (dưới cùng), 13.85 cuối (trên cùng)
+        raw_vals   = [v / 1e9 for v in lnst_by_bu.values()]
+        raw_labels = list(lnst_by_bu.keys())
+        pairs = list(zip(raw_vals, raw_labels))
+        pairs.sort(key=lambda x: x[0])
+        bar_x      = [p[0] for p in pairs]
+        bar_labels = [p[1] for p in pairs]
+        bar_colors = ["#22c55e" if v >= 0 else "#ef4444" for v in bar_x]
+        bar_texts  = [f"{v:.2f} Tỷ" for v in bar_x]
 
-        max_abs   = max(abs(v) for v in bar_x) if bar_x else 1
-        threshold = max_abs * 0.12
+        max_abs = max(abs(v) for v in bar_x) if bar_x else 1
         text_positions = [
-            "inside" if abs(v) >= threshold else "outside"
+            "outside" if abs(v) < max_abs * 0.15 else "inside"
             for v in bar_x
+        ]
+        text_colors = [
+            "#1e293b" if pos == "outside" else "white"
+            for pos in text_positions
         ]
 
         fig_bar = go.Figure(go.Bar(
@@ -234,7 +240,7 @@ def render(df: pd.DataFrame):
             text=bar_texts,
             textposition=text_positions,
             insidetextanchor="start",
-            textfont=dict(size=10),
+            textfont=dict(size=10, color=text_colors),
         ))
         fig_bar.update_traces(cliponaxis=False)
         fig_bar.update_layout(**CHART_LAYOUT)
