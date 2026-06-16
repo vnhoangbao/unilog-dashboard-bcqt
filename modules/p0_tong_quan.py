@@ -235,8 +235,7 @@ def render(df: pd.DataFrame):
             yaxis=dict(autorange="reversed"),
             showlegend=False,
             margin=dict(l=160, r=80, t=40, b=40),
-            uniformtext_minsize=9,
-            uniformtext_mode="hide",
+            uniformtext=dict(minsize=9, mode="hide"),
         )
         apply_chart_style(fig_bar, horizontal=True)
         st.plotly_chart(fig_bar, use_container_width=True)
