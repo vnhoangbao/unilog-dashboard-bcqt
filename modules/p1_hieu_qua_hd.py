@@ -163,13 +163,14 @@ def render(df: pd.DataFrame):
         use_container_width=True,
     )
 
-    # ── B. LN Gộp + LN HĐKD (2 cột) ────────────────────────────
-    col_b1, col_b2 = st.columns(2)
-    col_b1.plotly_chart(
+    # ── B. LN Gộp — 1 hàng ───────────────────────────────────
+    st.plotly_chart(
         line_tt_kh(ln_gop_vals, ln_gop_kh, "Lợi nhuận gộp", color=COLOR_OK, height=300),
         use_container_width=True,
     )
-    col_b2.plotly_chart(
+
+    # ── B2. LN HĐKD — 1 hàng ─────────────────────────────────
+    st.plotly_chart(
         line_tt_kh(lnhdkd_vals, lnhdkd_kh,
                    "LN Hoạt động kinh doanh (KH = LN Gộp KH − CPQL KH)",
                    color=COLOR_OK, height=300),

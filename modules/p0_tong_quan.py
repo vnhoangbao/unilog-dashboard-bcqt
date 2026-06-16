@@ -225,6 +225,7 @@ def render(df: pd.DataFrame):
             marker_color=bar_colors,
             text=bar_texts, textposition="outside",
             textfont=dict(size=10),
+            cliponaxis=False,
         ))
         fig_bar.update_layout(
             **CHART_LAYOUT,
@@ -233,6 +234,9 @@ def render(df: pd.DataFrame):
             xaxis_title="Tỷ đồng",
             yaxis=dict(autorange="reversed"),
             showlegend=False,
+            margin=dict(l=160, r=80, t=40, b=40),
+            uniformtext_minsize=9,
+            uniformtext_mode="hide",
         )
         apply_chart_style(fig_bar, horizontal=True)
         st.plotly_chart(fig_bar, use_container_width=True)
