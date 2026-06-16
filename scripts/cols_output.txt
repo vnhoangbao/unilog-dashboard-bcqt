@@ -1,0 +1,49 @@
+
+=== target (gid=1974781100) ===
+Columns (26 total):
+  1. TARGETID => 1
+  2. Phòng => Phòng HCNS
+  3. Ma_BP => Phòng HCNS(Chung)
+  4. Ngày bắt đầu => 2026-01-01
+  5. Ngày kết thúc => 2026-12-31
+  6. Tên công việc => O1: Tối ưu hóa chi phí vận hành & Quỹ Lương
+  7. Mô tả mục tiêu cần thực hiện  => KR1: Quỹ lương thực tế nằm trong hạn mức ngân sách
+  8. Phân loại => OKRs
+  9. Owner => Phạm Quang Duy
+  10. Đơn vị đo lường => Vnd
+  11. Cách thức tính toán => So từng tháng
+  12. Cách thức so sánh => Càng thấp càng tốt
+  13. Số liệu đo lường => 0.0
+  14. Số liệu kế hoạch => 0.0
+  15. Mức độ thực hiện => 0.0%
+  16. Trạng thái hiện tại => Vượt kế hoạch
+  17. Unnamed: 16 => nan
+  18. Unnamed: 17 => nan
+  19. Unnamed: 18 => nan
+  20. Unnamed: 19 => nan
+  21. Unnamed: 20 => nan
+  22. Càng cao càng tốt => Ngưỡng %
+  23. Unnamed: 22 => Nhãn
+  24. Unnamed: 23 => nan
+  25. Càng thấp càng tốt => Ngưỡng %
+  26. Unnamed: 25 => Nhãn
+
+=== detail (gid=1080595888) ===
+Columns (15 total):
+  1. DETAIL_ID => M1_1
+  2. TARGETID => 1
+  3. Ma_Bp => Phòng HCNS(Chung)
+  4. Ngày tháng => 2026-01-31
+  5. Chi tiết công việc con => Chưa bắt đầu triển khai
+  6. Công việc đã làm,kết quả, vấn đề => Chưa bắt đầu triển khai
+  7. Công việc tiếp theo, kpi đo lường , kết quả dự kiến => Chưa bắt đầu triển khai
+  8. Phân loại công việc => OKRs
+  9. Đơn vị đo lường => Vnd
+  10. Cách thức tính toán => So từng tháng
+  11. Cách thức so sánh => Càng thấp càng tốt
+  12. Số liệu kế hoạch => 0.0
+  13. Số liệu đo lường => 0
+  14. Mức độ thực hiện => 0.0%
+  15. Trạng thái => Vượt kế hoạch
+
+Done.
