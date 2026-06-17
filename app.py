@@ -112,42 +112,7 @@ st.markdown("""
       border-radius: 8px;
   }
 
-  /* Hide Streamlit toolbar và manage app button */
-  header[data-testid="stHeader"] {
-      display: none !important;
-  }
-  #MainMenu {
-      display: none !important;
-  }
-  footer {
-      display: none !important;
-  }
-  [data-testid="stToolbar"] {
-      display: none !important;
-  }
-  [data-testid="manage-app-button"] {
-      display: none !important;
-  }
-  div[class*="StatusWidget"] {
-      display: none !important;
-  }
 
-  /* FORCE sidebar luôn hiện, không bao giờ ẩn */
-  [data-testid="stSidebar"] {
-      display: block !important;
-      visibility: visible !important;
-  }
-  [data-testid="stSidebarContent"] {
-      display: block !important;
-      visibility: visible !important;
-  }
-  /* Ẩn nút thu sidebar để user không bấm nhầm */
-  [data-testid="stSidebarCollapseButton"] {
-      display: none !important;
-  }
-  button[data-testid="collapsedControl"] {
-      display: none !important;
-  }
 </style>
 """, unsafe_allow_html=True)
 
