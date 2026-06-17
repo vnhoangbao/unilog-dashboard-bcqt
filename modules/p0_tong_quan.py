@@ -204,6 +204,7 @@ def render(df: pd.DataFrame):
             fig_pie = go.Figure(go.Pie(
                 labels=dt_labels, values=dt_vals,
                 hole=0.38,
+                textinfo='text',
                 textposition='inside',
                 insidetextorientation='radial',
                 textfont=dict(size=9),
