@@ -76,7 +76,19 @@ CHART_LAYOUT = dict(
 CHART_LAYOUT_NO_MARGIN = {k: v for k, v in CHART_LAYOUT.items() if k != "margin"}
 
 MODEBAR_CONFIG = {
-    'modeBarButtons': [['toImage', 'toggleFullScreen']],
+    'displayModeBar': True,
+    'modeBarButtonsToRemove': [
+        'zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d',
+        'autoScale2d', 'resetScale2d', 'resetViews',
+        'select2d', 'lasso2d', 'toggleSpikelines',
+        'hoverClosestCartesian', 'hoverCompareCartesian',
+        'zoom3d', 'pan3d', 'orbitRotation', 'tableRotation',
+        'resetCameraDefault3d', 'resetCameraLastSave3d',
+        'hoverClosest3d', 'zoomInGeo', 'zoomOutGeo',
+        'resetGeo', 'hoverClosestGeo', 'hoverClosestGl2d',
+        'hoverClosestPie', 'toggleHover', 'resetViews',
+        'sendDataToCloud', 'toggleFullScreen',
+    ],
     'displaylogo': False,
 }
 
