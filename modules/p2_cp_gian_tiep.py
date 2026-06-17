@@ -17,7 +17,7 @@ from data_loader import get_metric, get_metric_plan, get_metric_multi, get_metri
 from utils import (
     fmt_ty, CHART_LAYOUT, apply_chart_style,
     month_display_label, month_sort_key, smart_textpos,
-    fix_chart_yrange_and_labels, MODEBAR_CONFIG,
+    fix_chart_yrange_and_labels, MODEBAR_CONFIG, apply_responsive,
 )
 
 
@@ -136,6 +136,7 @@ def render(df: pd.DataFrame):
         plan_vals=[v / 1e9 for v in y_cp_kh],
         value_fmt="ty",
     )
+    fig_cp = apply_responsive(fig_cp)
     st.plotly_chart(fig_cp, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── SECTION C: % CPQL / DT ───────────────────────────────
@@ -177,6 +178,7 @@ def render(df: pd.DataFrame):
         plan_vals=pct_cp_kh,
         value_fmt="pct",
     )
+    fig_pct = apply_responsive(fig_pct)
     st.plotly_chart(fig_pct, use_container_width=True, config=MODEBAR_CONFIG)
 
     st.divider()
@@ -239,6 +241,7 @@ def render(df: pd.DataFrame):
         fig_gt.update_yaxes(autorange="reversed")
         fig_gt.update_xaxes(range=[0, x_max_dept * 1.18])
         apply_chart_style(fig_gt, horizontal=True)
+        fig_gt = apply_responsive(fig_gt)
         st.plotly_chart(fig_gt, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── SECTION E: % CP gián tiếp / DT theo tháng ───────────
@@ -293,4 +296,5 @@ def render(df: pd.DataFrame):
         plan_vals=pct_cpgt_kh,
         value_fmt="pct",
     )
+    fig_pgt = apply_responsive(fig_pgt)
     st.plotly_chart(fig_pgt, use_container_width=True, config=MODEBAR_CONFIG)

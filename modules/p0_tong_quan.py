@@ -14,7 +14,7 @@ from config import (
 from data_loader import get_metric, get_metric_by_bu, get_metric_plan
 from utils import (
     fmt_ty, CHART_LAYOUT, CHART_LAYOUT_NO_MARGIN, apply_chart_style,
-    month_display_label, month_sort_key, MODEBAR_CONFIG,
+    month_display_label, month_sort_key, MODEBAR_CONFIG, apply_responsive,
 )
 
 
@@ -187,6 +187,7 @@ def render(df: pd.DataFrame):
             height=340, showlegend=False, yaxis_title="Tỷ đồng",
         )
         apply_chart_style(fig_wf)
+        fig_wf = apply_responsive(fig_wf)
         st.plotly_chart(fig_wf, use_container_width=True, config=MODEBAR_CONFIG)
 
     with col_pie:
@@ -220,6 +221,7 @@ def render(df: pd.DataFrame):
                 height=300, margin=dict(l=10, r=10, t=30, b=10),
                 showlegend=False, paper_bgcolor='white', plot_bgcolor='white',
             )
+            fig_pie = apply_responsive(fig_pie)
             st.plotly_chart(fig_pie, use_container_width=True, config=MODEBAR_CONFIG)
         else:
             st.info("Không có dữ liệu doanh thu.")
@@ -266,4 +268,5 @@ def render(df: pd.DataFrame):
             xaxis=dict(range=x_range),
         )
         apply_chart_style(fig_bar, horizontal=True)
+        fig_bar = apply_responsive(fig_bar)
         st.plotly_chart(fig_bar, use_container_width=True, config=MODEBAR_CONFIG)

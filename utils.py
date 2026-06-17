@@ -70,14 +70,18 @@ CHART_LAYOUT = dict(
     font          = dict(family="Inter, sans-serif", size=11, color="#374151"),
     margin        = dict(l=65, r=85, t=45, b=20),
     legend        = dict(orientation="h", y=1.05, x=0),
+    autosize      = True,
     dragmode      = False,
+    uniformtext   = dict(minsize=8, mode='hide'),
     xaxis         = dict(
         showline=True, linecolor='#94a3b8', linewidth=1,
         showgrid=False, zeroline=False, mirror=False,
+        automargin=True,
     ),
     yaxis         = dict(
         showline=True, linecolor='#94a3b8', linewidth=1,
         showgrid=False, zeroline=False, mirror=False,
+        automargin=True,
     ),
 )
 
@@ -119,6 +123,29 @@ def apply_chart_style(fig: go.Figure, tickangle: int = -30,
         title_font=dict(size=12, color="#1e293b"),
     )
     fig.update_traces(cliponaxis=False)
+    return fig
+
+
+def apply_responsive(fig):
+    """Áp dụng sau mỗi fig để đảm bảo
+    label/axis không bị mất khi xoay màn hình."""
+    fig.update_traces(
+        cliponaxis=False,
+        selector=dict(type='bar')
+    )
+    fig.update_traces(
+        cliponaxis=False,
+        selector=dict(type='scatter')
+    )
+    fig.update_traces(
+        constraintext='none',
+        textfont=dict(size=10),
+        selector=dict(type='bar')
+    )
+    fig.update_layout(
+        xaxis=dict(automargin=True, fixedrange=True),
+        yaxis=dict(automargin=True, fixedrange=True),
+    )
     return fig
 
 
