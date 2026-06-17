@@ -112,14 +112,23 @@ st.markdown("""
       border-radius: 8px;
   }
 
-  /* Ẩn nút Manage App của Streamlit Cloud trên mobile */
+  /* Hide Streamlit toolbar và manage app button */
+  header[data-testid="stHeader"] {
+      display: none !important;
+  }
+  #MainMenu {
+      display: none !important;
+  }
+  footer {
+      display: none !important;
+  }
+  [data-testid="stToolbar"] {
+      display: none !important;
+  }
   [data-testid="manage-app-button"] {
       display: none !important;
   }
-  .stAppDeployButton {
-      display: none !important;
-  }
-  iframe[title="streamlit_manage_app"] {
+  div[class*="StatusWidget"] {
       display: none !important;
   }
 </style>
