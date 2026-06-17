@@ -70,6 +70,14 @@ CHART_LAYOUT = dict(
     font          = dict(family="Inter, sans-serif", size=11, color="#374151"),
     margin        = dict(l=65, r=85, t=45, b=20),
     legend        = dict(orientation="h", y=1.05, x=0),
+    xaxis         = dict(
+        showline=True, linecolor='#94a3b8', linewidth=1,
+        showgrid=False, zeroline=False, mirror=False,
+    ),
+    yaxis         = dict(
+        showline=True, linecolor='#94a3b8', linewidth=1,
+        showgrid=False, zeroline=False, mirror=False,
+    ),
 )
 
 # Dùng khi cần truyền margin riêng để tránh duplicate keyword
@@ -190,20 +198,22 @@ def line_chart_actual_vs_plan(
         )
 
     base = {k: v for k, v in CHART_LAYOUT.items()
-            if k not in ("hovermode",)}
+            if k not in ("hovermode", "xaxis", "yaxis")}
     fig.update_layout(
         **base,
         title=dict(text=title, font=dict(size=13)),
         yaxis_title=yaxis_title,
         height=height,
         hovermode="x unified",
-        xaxis=dict(showgrid=False, zeroline=False,
-                   ticklabelstandoff=6,
-                   tickfont=dict(size=11, color="#1e293b")),
-        yaxis=dict(range=[y_lo, y_hi], autorange=False,
-                   showgrid=False, zeroline=False,
-                   tickfont=dict(size=11, color="#1e293b")),
     )
+    fig.update_xaxes(showline=True, linecolor='#94a3b8', linewidth=1,
+                      showgrid=False, zeroline=False, mirror=False,
+                      ticklabelstandoff=6,
+                      tickfont=dict(size=11, color="#1e293b"))
+    fig.update_yaxes(showline=True, linecolor='#94a3b8', linewidth=1,
+                      range=[y_lo, y_hi], autorange=False,
+                      showgrid=False, zeroline=False, mirror=False,
+                      tickfont=dict(size=11, color="#1e293b"))
     return fig
 
 
@@ -252,7 +262,8 @@ def hbar_chart(
         textfont=dict(size=10),
     ))
     fig.update_layout(**CHART_LAYOUT, title=dict(text=title, font=dict(size=13)),
-                      height=height, yaxis=dict(autorange="reversed"))
+                      height=height)
+    fig.update_yaxes(autorange="reversed")
     apply_chart_style(fig, horizontal=True)
     return fig
 
@@ -300,7 +311,7 @@ def fix_chart_yrange_and_labels(
 ) -> go.Figure:
     """
     Áp dụng cho bất kỳ go.Figure() nào:
-    1. Xóa fill + text labels khỏi traces
+    1. Xóa text labels khỏi traces (giữ nguyên fill/fillcolor)
     2. Set Y-range phù hợp với data
     3. Thêm annotations cho actual_vals
     """
@@ -314,9 +325,8 @@ def fix_chart_yrange_and_labels(
         except Exception:
             return False
 
-    # 1. Xóa fill và text-mode trong tất cả trace
+    # 1. Xóa text-mode trong tất cả trace
     for trace in fig.data:
-        trace.update(fill=None, fillcolor=None)
         mode = getattr(trace, "mode", None)
         if mode and "text" in str(mode):
             new_mode = (str(mode)

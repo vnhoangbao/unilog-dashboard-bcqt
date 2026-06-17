@@ -106,6 +106,7 @@ def render(df: pd.DataFrame):
             mode="lines+markers",
             line=dict(color=color, width=2.5, shape="spline", smoothing=1.2),
             marker=dict(size=7),
+            fill="tozeroy", fillcolor="rgba(30, 58, 95, 0.12)",
             hovertemplate="<b>%{x}</b><br>Thực tế: %{y:,.1f} Tỷ<extra></extra>",
         ))
         if any(v != 0 for v in y_kh):
@@ -156,9 +157,9 @@ def render(df: pd.DataFrame):
             **CHART_LAYOUT, barmode="group", height=height,
             title=dict(text=title, font=dict(size=13)),
             yaxis_title="Tỷ đồng",
-            xaxis=dict(range=[-0.5, n - 0.5]),
             hovermode="x unified",
         )
+        fig.update_xaxes(range=[-0.5, n - 0.5])
         fig.update_yaxes(range=y_range)
         apply_chart_style(fig)
         return fig
@@ -226,9 +227,9 @@ def render(df: pd.DataFrame):
         **CHART_LAYOUT, barmode="group", height=400,
         title=dict(text="% Giá vốn hàng bán / Doanh thu", font=dict(size=13)),
         yaxis_title="%",
-        xaxis=dict(range=[-0.5, na - 0.5]),
         hovermode="x unified",
     )
+    fig_gvhb_pct.update_xaxes(range=[-0.5, na - 0.5])
     apply_chart_style(fig_gvhb_pct)
     all_pct_vals = pct_kh + pct_mn + pct_vh + pct_tot
     pct_y_max = max((v for v in all_pct_vals if v > 0), default=100)

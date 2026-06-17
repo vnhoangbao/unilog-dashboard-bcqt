@@ -110,7 +110,7 @@ def render(df: pd.DataFrame):
         text=[f"{v/1e9:.1f}" if v else "" for v in y_cp_tt],
         textposition=smart_textpos(n),
         textfont=dict(size=10, color=COLOR_ACTUAL),
-        fill="tozeroy", fillcolor="rgba(30,58,95,0.07)",
+        fill="tozeroy", fillcolor="rgba(30, 58, 95, 0.12)",
         hovertemplate="<b>%{x}</b><br>Thực tế: %{y:,.1f} Tỷ<extra></extra>",
     ))
     if any(v != 0 for v in y_cp_kh):
@@ -126,9 +126,9 @@ def render(df: pd.DataFrame):
         **CHART_LAYOUT, height=300,
         title=dict(text="Chi phí QLDN theo thời gian (STT 82 + 151)", font=dict(size=13)),
         yaxis_title="Tỷ đồng",
-        xaxis=dict(range=[-0.3, n - 0.7]),
         hovermode="x unified",
     )
+    fig_cp.update_xaxes(range=[-0.3, n - 0.7])
     apply_chart_style(fig_cp)
     fix_chart_yrange_and_labels(
         fig_cp, x_labels,
@@ -151,7 +151,7 @@ def render(df: pd.DataFrame):
         text=[f"{v:.1f}%" if v else "" for v in pct_cp_tt],
         textposition=smart_textpos(n),
         textfont=dict(size=10, color=COLOR_ACTUAL),
-        fill="tozeroy", fillcolor="rgba(30,58,95,0.07)",
+        fill="tozeroy", fillcolor="rgba(30, 58, 95, 0.12)",
         hovertemplate="<b>%{x}</b><br>Thực tế: %{y:.1f}%<extra></extra>",
     ))
     if any(v != 0 for v in pct_cp_kh):
@@ -167,9 +167,9 @@ def render(df: pd.DataFrame):
         **CHART_LAYOUT, height=280,
         title=dict(text="% Chi phí QLDN / Doanh thu", font=dict(size=13)),
         yaxis_title="%",
-        xaxis=dict(range=[-0.3, n - 0.7]),
         hovermode="x unified",
     )
+    fig_pct.update_xaxes(range=[-0.3, n - 0.7])
     apply_chart_style(fig_pct)
     fix_chart_yrange_and_labels(
         fig_pct, x_labels,
@@ -233,10 +233,10 @@ def render(df: pd.DataFrame):
             **CHART_LAYOUT, barmode="group",
             title=dict(text="Chi phí bộ phận gián tiếp TT vs KH", font=dict(size=13)),
             xaxis_title="Tỷ đồng",
-            yaxis=dict(autorange="reversed"),
             height=max(300, len(sorted_depts) * 55 + 100),
             hovermode="y unified",
         )
+        fig_gt.update_yaxes(autorange="reversed")
         fig_gt.update_xaxes(range=[0, x_max_dept * 1.18])
         apply_chart_style(fig_gt, horizontal=True)
         st.plotly_chart(fig_gt, use_container_width=True, config=MODEBAR_CONFIG)
@@ -268,7 +268,7 @@ def render(df: pd.DataFrame):
         text=[f"{v:.1f}%" if v else "" for v in pct_cpgt],
         textposition=smart_textpos(n),
         textfont=dict(size=10, color=COLOR_ACTUAL),
-        fill="tozeroy", fillcolor="rgba(30,58,95,0.07)",
+        fill="tozeroy", fillcolor="rgba(30, 58, 95, 0.12)",
         hovertemplate="<b>%{x}</b><br>%{y:.1f}%<extra></extra>",
     ))
     if any(v != 0 for v in pct_cpgt_kh):
@@ -283,9 +283,9 @@ def render(df: pd.DataFrame):
         **CHART_LAYOUT, height=280,
         title=dict(text="% Chi phí bộ phận gián tiếp / Doanh thu", font=dict(size=13)),
         yaxis_title="%",
-        xaxis=dict(range=[-0.3, n - 0.7]),
         hovermode="x unified",
     )
+    fig_pgt.update_xaxes(range=[-0.3, n - 0.7])
     apply_chart_style(fig_pgt)
     fix_chart_yrange_and_labels(
         fig_pgt, x_labels,
