@@ -15,11 +15,6 @@ REQUIRED_COLS = [CN_BP, CN_TIEN]
 
 # ── HEADER/CELL STYLE — khớp giao diện trang 4 (df_to_html) ────
 _TABLE_STYLE = "width:100%;border-collapse:collapse"
-_TH = (
-    "background:#1e3a5f;color:white;font-weight:700;"
-    "font-size:12px;padding:10px 12px;text-align:left;"
-    "border-bottom:2px solid #2d4a7a;white-space:nowrap"
-)
 _TD = (
     "padding:7px 12px;font-size:12px;color:#1e293b;"
     "border-bottom:0.5px solid #e2e8f0"
@@ -52,7 +47,16 @@ def df_to_html(df_show: pd.DataFrame, heat_col: str = None, max_height: int = No
                 cells += f"<td style='{style}'>{val}</td>"
         rows_html += f"<tr>{cells}</tr>"
 
-    header_cells = "".join(f"<th style='{_TH}'>{c}</th>" for c in df_show.columns)
+    header_cells = ""
+    for c in df_show.columns:
+        style_th = (
+            f"background:#1e3a5f;color:white;font-weight:700;"
+            f"font-size:12px;padding:10px 12px;text-align:left;"
+            f"border-bottom:2px solid #2d4a7a;"
+            f"width:100px;overflow:hidden;text-overflow:ellipsis;"
+            f"white-space:nowrap"
+        )
+        header_cells += f"<th style='{style_th}'>{c}</th>"
 
     wrap_style = "overflow-x:auto;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:12px"
     if max_height:
