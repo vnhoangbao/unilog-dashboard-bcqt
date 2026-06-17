@@ -70,6 +70,7 @@ CHART_LAYOUT = dict(
     font          = dict(family="Inter, sans-serif", size=11, color="#374151"),
     margin        = dict(l=65, r=85, t=45, b=20),
     legend        = dict(orientation="h", y=1.05, x=0),
+    dragmode      = False,
     xaxis         = dict(
         showline=True, linecolor='#94a3b8', linewidth=1,
         showgrid=False, zeroline=False, mirror=False,
@@ -84,20 +85,15 @@ CHART_LAYOUT = dict(
 CHART_LAYOUT_NO_MARGIN = {k: v for k, v in CHART_LAYOUT.items() if k != "margin"}
 
 MODEBAR_CONFIG = {
-    'displayModeBar': True,
     'modeBarButtonsToRemove': [
         'zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d',
         'autoScale2d', 'resetScale2d', 'resetViews',
         'select2d', 'lasso2d', 'toggleSpikelines',
         'hoverClosestCartesian', 'hoverCompareCartesian',
-        'zoom3d', 'pan3d', 'orbitRotation', 'tableRotation',
-        'resetCameraDefault3d', 'resetCameraLastSave3d',
-        'hoverClosest3d', 'zoomInGeo', 'zoomOutGeo',
-        'resetGeo', 'hoverClosestGeo', 'hoverClosestGl2d',
-        'hoverClosestPie', 'toggleHover', 'resetViews',
-        'sendDataToCloud', 'toggleFullScreen',
     ],
     'displaylogo': False,
+    'scrollZoom': False,
+    'doubleClick': False,
 }
 
 

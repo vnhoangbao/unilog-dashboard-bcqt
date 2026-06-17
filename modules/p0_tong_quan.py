@@ -186,10 +186,6 @@ def render(df: pd.DataFrame):
             title=dict(text="P&L Waterfall (Tỷ đồng)", font=dict(size=13)),
             height=340, showlegend=False, yaxis_title="Tỷ đồng",
         )
-        wf_steps = [0, dt_tt/1e9, ln_tt/1e9, hd_tt/1e9, st_tt/1e9]
-        wf_min = min(wf_steps)
-        wf_max = max(wf_steps)
-        fig_wf.update_yaxes(range=[wf_min * 1.15, wf_max * 1.15])
         apply_chart_style(fig_wf)
         st.plotly_chart(fig_wf, use_container_width=True, config=MODEBAR_CONFIG)
 
