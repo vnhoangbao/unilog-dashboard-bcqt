@@ -9,6 +9,3 @@ font                     = "sans serif"
 headless    = true
 enableCORS  = false
 port        = 8501
-
-[client]
-toolbarMode = "viewer"

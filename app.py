@@ -131,6 +131,23 @@ st.markdown("""
   div[class*="StatusWidget"] {
       display: none !important;
   }
+
+  /* FORCE sidebar luôn hiện, không bao giờ ẩn */
+  [data-testid="stSidebar"] {
+      display: block !important;
+      visibility: visible !important;
+  }
+  [data-testid="stSidebarContent"] {
+      display: block !important;
+      visibility: visible !important;
+  }
+  /* Ẩn nút thu sidebar để user không bấm nhầm */
+  [data-testid="stSidebarCollapseButton"] {
+      display: none !important;
+  }
+  button[data-testid="collapsedControl"] {
+      display: none !important;
+  }
 </style>
 """, unsafe_allow_html=True)
 
