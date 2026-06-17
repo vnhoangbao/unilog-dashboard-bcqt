@@ -200,29 +200,28 @@ def render(df: pd.DataFrame):
 
         if dt_vals:
             total = sum(dt_vals)
-            custom_texts = []
-            for name, v in zip(dt_labels, dt_vals):
-                pct = v / total * 100 if total > 0 else 0
-                if pct >= 5:
-                    custom_texts.append(f"{name}<br>{pct:.1f}%")
-                else:
-                    custom_texts.append(f"{pct:.1f}%")
 
             fig_pie = go.Figure(go.Pie(
                 labels=dt_labels, values=dt_vals,
-                hole=0.42,
-                text=custom_texts,
-                textinfo='text',
-                textposition='auto',
+                hole=0.38,
+                textposition='inside',
                 insidetextorientation='radial',
-                textfont=dict(size=10),
+                textfont=dict(size=9),
+                showlegend=False,
+                pull=[0.03 if (v / sum(dt_vals) * 100) < 3 else 0 for v in dt_vals],
                 hovertemplate="%{label}<br>%{value:,.0f}<br>%{percent}<extra></extra>",
             ))
+
+            new_texts = []
+            for v, lbl in zip(dt_vals, dt_labels):
+                pct = v / total * 100 if total > 0 else 0
+                new_texts.append("" if pct < 3 else f"{lbl}<br>{pct:.1f}%")
+            fig_pie.update_traces(text=new_texts, textinfo='text')
+
             fig_pie.update_layout(
-                **CHART_LAYOUT_NO_MARGIN,
-                margin=dict(l=40, r=120, t=40, b=40),
                 title=dict(text="Cơ cấu Doanh thu theo Đơn vị", font=dict(size=13)),
-                height=380, showlegend=False,
+                height=300, margin=dict(l=10, r=10, t=30, b=10),
+                showlegend=False, paper_bgcolor='white', plot_bgcolor='white',
             )
             st.plotly_chart(fig_pie, use_container_width=True, config=MODEBAR_CONFIG)
         else:
