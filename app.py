@@ -111,6 +111,17 @@ st.markdown("""
       border: 1px solid #e2e8f0;
       border-radius: 8px;
   }
+
+  /* Ẩn nút Manage App của Streamlit Cloud trên mobile */
+  [data-testid="manage-app-button"] {
+      display: none !important;
+  }
+  .stAppDeployButton {
+      display: none !important;
+  }
+  iframe[title="streamlit_manage_app"] {
+      display: none !important;
+  }
 </style>
 """, unsafe_allow_html=True)
 
