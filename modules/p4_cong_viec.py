@@ -124,9 +124,20 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
         else:
             sel_thang = []
 
+        def fmt_month_label(date_str):
+            """'2026-01-31' → 'Tháng 1'"""
+            try:
+                month_num = int(str(date_str)[5:7])
+                return f"Tháng {month_num}"
+            except Exception:
+                return str(date_str)
+
         dt_thang_list = sorted(df_detail[DT_THANG].dropna().unique().tolist()) if ok_detail else []
-        sel_dt_thang = st.multiselect("Tháng (chi tiết)", dt_thang_list,
-                                      default=dt_thang_list, key="p4_dt_thang")
+        dt_thang_map    = {fmt_month_label(m): m for m in dt_thang_list}
+        dt_thang_labels = list(dt_thang_map.keys())
+        sel_dt_thang_labels = st.multiselect("Tháng (chi tiết)", dt_thang_labels,
+                                             default=dt_thang_labels, key="p4_dt_thang")
+        sel_dt_thang = [dt_thang_map[l] for l in sel_dt_thang_labels]
 
     # ── LỌC TARGET ──────────────────────────────────────────
     if ok_target:

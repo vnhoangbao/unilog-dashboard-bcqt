@@ -10,9 +10,61 @@ from config import (
     CN_BP, CN_KHACH, CN_NGAY, CN_DVT, CN_TIEN, CN_NGAY_OPTIONS,
 )
 from data_loader import check_columns
-from utils import style_heat_red
 
 REQUIRED_COLS = [CN_BP, CN_TIEN]
+
+# ── HEADER/CELL STYLE — khớp giao diện trang 4 (df_to_html) ────
+_TABLE_STYLE = "width:100%;border-collapse:collapse"
+_TH = (
+    "background:#1e3a5f;color:white;font-weight:700;"
+    "font-size:12px;padding:10px 12px;text-align:left;"
+    "border-bottom:2px solid #2d4a7a;white-space:nowrap"
+)
+_TD = (
+    "padding:7px 12px;font-size:12px;color:#1e293b;"
+    "border-bottom:0.5px solid #e2e8f0"
+)
+
+
+def _heat_style(val, max_val):
+    if pd.isna(val) or val == 0:
+        return ""
+    intensity = min(val / max_val, 1.0)
+    r = int(239 + (255 - 239) * (1 - intensity))
+    g = int(68  + (255 - 68)  * (1 - intensity))
+    b = int(68  + (255 - 68)  * (1 - intensity))
+    return f";background-color:rgba({r},{g},{b},0.6);color:#7f1d1d;font-weight:600"
+
+
+def df_to_html(df_show: pd.DataFrame, heat_col: str = None, max_height: int = None) -> str:
+    max_val = df_show[heat_col].max() if heat_col and df_show[heat_col].max() > 0 else 1
+
+    rows_html = ""
+    for _, row in df_show.iterrows():
+        cells = ""
+        for col in df_show.columns:
+            val = row[col]
+            style = _TD
+            if col == heat_col and isinstance(val, (int, float)):
+                style += _heat_style(val, max_val)
+                cells += f"<td style='{style}'>{val:,.0f}</td>"
+            else:
+                cells += f"<td style='{style}'>{val}</td>"
+        rows_html += f"<tr>{cells}</tr>"
+
+    header_cells = "".join(f"<th style='{_TH}'>{c}</th>" for c in df_show.columns)
+
+    wrap_style = "overflow-x:auto;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:12px"
+    if max_height:
+        wrap_style += f";overflow-y:auto;max-height:{max_height}px"
+
+    return (
+        f"<div style='{wrap_style}'>"
+        f"<table style='{_TABLE_STYLE}'>"
+        f"<thead><tr>{header_cells}</tr></thead>"
+        f"<tbody>{rows_html}</tbody>"
+        "</table></div>"
+    )
 
 
 def render(df: pd.DataFrame):
@@ -101,9 +153,10 @@ def render(df: pd.DataFrame):
         rename_map[CN_DVT] = "ĐVT"
     by_bp_disp = by_bp.rename(columns=rename_map)
 
-    styled1 = style_heat_red(by_bp_disp, "Thành tiền")
-    styled1 = styled1.format({"Thành tiền": "{:,.0f}"})
-    st.dataframe(styled1, use_container_width=True, height=300)
+    st.markdown(
+        df_to_html(by_bp_disp, heat_col="Thành tiền", max_height=300),
+        unsafe_allow_html=True,
+    )
 
     # ── BẢNG 2: THEO KHÁCH HÀNG ─────────────────────────────
     if has_khach:
@@ -119,11 +172,12 @@ def render(df: pd.DataFrame):
             rename_kh[CN_DVT] = "ĐVT"
         by_kh_disp = by_kh.rename(columns=rename_kh)
 
-        styled2 = style_heat_red(by_kh_disp, "Thành tiền")
-        styled2 = styled2.format({"Thành tiền": "{:,.0f}"})
         total_rows = len(by_kh_disp)
-        st.dataframe(styled2, use_container_width=True,
-                     height=min(600, total_rows * 35 + 60))
+        st.markdown(
+            df_to_html(by_kh_disp, heat_col="Thành tiền",
+                       max_height=min(600, total_rows * 35 + 60)),
+            unsafe_allow_html=True,
+        )
         st.caption(f"1 – {total_rows} / {total_rows} khách hàng")
 
     # ── BẢNG 3: THEO BỘ PHẬN + NGÀY QUÁ HẠN ────────────────
@@ -146,8 +200,9 @@ def render(df: pd.DataFrame):
         }
         by_full_disp = by_full.rename(columns={k: v for k, v in rename_full.items() if k in by_full.columns})
 
-        styled3 = style_heat_red(by_full_disp, "Thành tiền")
-        styled3 = styled3.format({"Thành tiền": "{:,.0f}"})
         total_full = len(by_full_disp)
-        st.dataframe(styled3, use_container_width=True,
-                     height=min(600, total_full * 35 + 60))
+        st.markdown(
+            df_to_html(by_full_disp, heat_col="Thành tiền",
+                       max_height=min(600, total_full * 35 + 60)),
+            unsafe_allow_html=True,
+        )
