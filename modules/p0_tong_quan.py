@@ -86,51 +86,45 @@ def render(df: pd.DataFrame):
     npm_pct = st_tt / dt_tt * 100 if dt_tt else 0.0
 
     # ── KPI CARDS ────────────────────────────────────────────
-    def _kh_html(tt: float, kh: float) -> str:
+    def _delta_text(tt: float, kh: float) -> str:
         if kh <= 0:
             return ""
         pct = tt / kh * 100
-        col   = "#16a34a" if pct >= 100 else "#dc2626"
         arrow = "▲" if pct >= 100 else "▼"
-        return (
-            f"<p style='margin:3px 0 0; font-size:12px;"
-            f"font-weight:500; color:{col}'>{arrow} {pct:.1f}% KH</p>"
-        )
+        return f"{arrow} {pct:.1f}% KH"
 
-    def _card(icon: str, label: str, value: float,
-              extra: str = "", tt: float = 0.0, kh: float = 0.0) -> str:
-        extra_h = (
-            f"<p style='margin:3px 0 0; font-size:11px; color:#64748b'>{extra}</p>"
-            if extra else ""
-        )
-        return (
-            f"<div style='background:white; border:1px solid #e2e8f0;"
-            f"border-radius:10px; padding:14px 16px;'>"
-            f"<p style='margin:0 0 4px; font-size:11px; color:#94a3b8'>{icon} {label}</p>"
-            f"<p style='margin:0; font-size:22px; font-weight:600; color:#1e293b'>"
-            f"{fmt_ty(value)}</p>"
-            f"{extra_h}"
-            f"{_kh_html(tt, kh)}"
-            f"</div>"
-        )
+    fmt_dt, fmt_gop, fmt_hd, fmt_st = (
+        fmt_ty(dt_tt), fmt_ty(ln_tt), fmt_ty(hd_tt), fmt_ty(st_tt),
+    )
+    delta_dt  = _delta_text(dt_tt, dt_kh)
+    delta_gop = _delta_text(ln_tt, ln_kh)
+    delta_hd  = _delta_text(hd_tt, hd_kh)
+    delta_st  = _delta_text(st_tt, st_kh)
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.markdown(
-        _card("💰", "Doanh thu",   dt_tt, tt=dt_tt, kh=dt_kh),
-        unsafe_allow_html=True,
-    )
-    c2.markdown(
-        _card("📊", "LN Gộp", ln_tt, extra=f"GM: {gm_pct:.1f}%", tt=ln_tt, kh=ln_kh),
-        unsafe_allow_html=True,
-    )
-    c3.markdown(
-        _card("⚙️", "LN HĐKD",    hd_tt, tt=hd_tt, kh=hd_kh),
-        unsafe_allow_html=True,
-    )
-    c4.markdown(
-        _card("✅", "LN Sau Thuế", st_tt, extra=f"NPM: {npm_pct:.1f}%", tt=st_tt, kh=st_kh),
-        unsafe_allow_html=True,
-    )
+    cols = st.columns(4)
+    card_data = [
+        ("🔥 Doanh thu",   fmt_dt,  delta_dt,  ""),
+        ("📊 LN Gộp",      fmt_gop, delta_gop, f"GM: {gm_pct:.1f}%"),
+        ("⚙️ LN HĐKD",    fmt_hd,  delta_hd,  ""),
+        ("✅ LN Sau Thuế", fmt_st,  delta_st,  f"NPM: {npm_pct:.1f}%"),
+    ]
+    for col, (label, value, delta, sub) in zip(cols, card_data):
+        delta_color = "#22c55e" if delta and "▲" in delta else "#ef4444"
+        col.markdown(f"""
+        <div style="background:white;border:1px solid #e2e8f0;
+                    border-radius:10px;padding:14px 16px;
+                    height:120px;box-sizing:border-box;
+                    display:flex;flex-direction:column;
+                    justify-content:space-between;">
+          <div style="font-size:11px;color:#94a3b8">{label}</div>
+          <div style="font-size:22px;font-weight:700;color:#1e293b;
+                      line-height:1.2">{value}</div>
+          <div style="min-height:32px;display:flex;flex-direction:column;
+                      gap:2px;justify-content:flex-end">
+            <div style="font-size:11px;color:#64748b">{sub}</div>
+            <div style="font-size:11px;color:{delta_color}">{delta}</div>
+          </div>
+        </div>""", unsafe_allow_html=True)
 
     # ── ALERT — đơn vị lỗ ────────────────────────────────────
     lnst_by_bu = get_metric_by_bu(df, STT_LNST, sel_months, sel_buses)
@@ -191,7 +185,8 @@ def render(df: pd.DataFrame):
         st.plotly_chart(fig_wf, use_container_width=True, config=MODEBAR_CONFIG)
 
     with col_pie:
-        dt_by_bu  = get_metric_by_bu(df, STT_DT, sel_months, sel_buses)
+        # Donut luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị"
+        dt_by_bu  = get_metric_by_bu(df, STT_DT, sel_months, all_bus)
         dt_labels = [bu for bu, v in dt_by_bu.items() if v > 0]
         dt_vals   = [v  for v  in dt_by_bu.values() if v > 0]
 
@@ -263,7 +258,8 @@ def render(df: pd.DataFrame):
         fig_bar.update_traces(cliponaxis=False)
         fig_bar.update_layout(**CHART_LAYOUT)
         fig_bar.update_layout(
-            margin=dict(l=150, r=60, t=30, b=30),
+            title=dict(text="P&L theo BU", font=dict(size=13), x=0, xanchor="left"),
+            margin=dict(l=150, r=60, t=40, b=30),
             height=max(280, len(bar_labels) * 38 + 60),
             xaxis=dict(range=x_range),
         )
