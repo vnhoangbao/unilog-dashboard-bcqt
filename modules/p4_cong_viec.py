@@ -18,15 +18,15 @@ REQUIRED_TARGET = [TG_CONGVIEC]
 REQUIRED_DETAIL = [DT_THANG, DT_TRANGTHAI]
 
 COL_WIDTHS = {
-    "Tên công việc":          "280px",
-    "Chi tiết công việc con": "260px",
-    "Tháng báo cáo":          "90px",
-    "Trạng thái":             "110px",
+    "Tên công việc":          "260px",
+    "Chi tiết công việc con": "240px",
+    "Tháng báo cáo":          "70px",
+    "Trạng thái":             "90px",
     "Kết quả / Vấn đề":      "200px",
     "Việc tiếp theo / KPI":   "200px",
-    "Owner":                  "130px",
-    "Đơn vị đo lường":       "80px",
-    "Mức độ thực hiện (%)":   "90px",
+    "Owner":                  "90px",
+    "Đơn vị đo lường":       "70px",
+    "Mức độ thực hiện (%)":   "80px",
 }
 
 _TABLE_STYLE = (
