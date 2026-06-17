@@ -222,10 +222,12 @@ def render(df: pd.DataFrame):
             st.info("Không có dữ liệu doanh thu.")
 
     # ── BAR NGANG — LN Sau Thuế theo đơn vị ─────────────────
-    if lnst_by_bu:
+    # Bar chart luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị"
+    lnst_by_bu_all = get_metric_by_bu(df, STT_LNST, sel_months, all_bus)
+    if lnst_by_bu_all:
         # Sort ascending: -7.41 đầu (dưới cùng), 13.85 cuối (trên cùng)
-        raw_vals   = [v / 1e9 for v in lnst_by_bu.values()]
-        raw_labels = list(lnst_by_bu.keys())
+        raw_vals   = [v / 1e9 for v in lnst_by_bu_all.values()]
+        raw_labels = list(lnst_by_bu_all.keys())
         pairs = list(zip(raw_vals, raw_labels))
         pairs.sort(key=lambda x: x[0])
         bar_x      = [p[0] for p in pairs]
