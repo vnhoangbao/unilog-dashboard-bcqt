@@ -16,7 +16,7 @@ from data_loader import get_metric, get_metric_plan, get_metric_multi, get_metri
 from utils import (
     fmt_ty, fmt_pct, CHART_LAYOUT, apply_chart_style,
     month_display_label, month_sort_key, smart_textpos,
-    fix_chart_yrange_and_labels,
+    fix_chart_yrange_and_labels, MODEBAR_CONFIG,
 )
 
 
@@ -131,6 +131,11 @@ def render(df: pd.DataFrame):
         y_tt = [v / 1e9 for v in y_tt_raw]
         y_kh = [v / 1e9 for v in y_kh_raw]
 
+        all_bar_vals = [v for v in y_tt + y_kh if v != 0]
+        y_max = max(all_bar_vals) if all_bar_vals else 1
+        y_min = min(all_bar_vals) if all_bar_vals else 0
+        y_range = [y_min * 1.18 if y_min < 0 else 0, y_max * 1.18]
+
         fig = go.Figure()
         fig.add_trace(go.Bar(
             x=x_labels, y=y_tt, name="Thực tế",
@@ -154,19 +159,20 @@ def render(df: pd.DataFrame):
             xaxis=dict(range=[-0.5, n - 0.5]),
             hovermode="x unified",
         )
+        fig.update_yaxes(range=y_range)
         apply_chart_style(fig)
         return fig
 
     # ── A. Doanh thu TT vs KH ─────────────────────────────────
     st.plotly_chart(
         line_tt_kh(dt_vals, dt_kh_vals, "Doanh thu bán hàng theo thời gian"),
-        use_container_width=True,
+        use_container_width=True, config=MODEBAR_CONFIG,
     )
 
     # ── B. LN Gộp — 1 hàng ───────────────────────────────────
     st.plotly_chart(
         line_tt_kh(ln_gop_vals, ln_gop_kh, "Lợi nhuận gộp", color=COLOR_OK, height=300),
-        use_container_width=True,
+        use_container_width=True, config=MODEBAR_CONFIG,
     )
 
     # ── B2. LN HĐKD — 1 hàng ─────────────────────────────────
@@ -174,13 +180,13 @@ def render(df: pd.DataFrame):
         line_tt_kh(lnhdkd_vals, lnhdkd_kh,
                    "LN Hoạt động kinh doanh (KH = LN Gộp KH − CPQL KH)",
                    color=COLOR_OK, height=300),
-        use_container_width=True,
+        use_container_width=True, config=MODEBAR_CONFIG,
     )
 
     # ── C. GVHB TT vs KH (bar) ───────────────────────────────
     st.plotly_chart(
         bar_tt_kh(gvhb_vals, gvhb_kh, "Giá vốn hàng bán (GVHB) theo thời gian"),
-        use_container_width=True,
+        use_container_width=True, config=MODEBAR_CONFIG,
     )
 
     # ── C2. % GVHB — chỉ show tháng có data (Cách A) ─────────
@@ -224,11 +230,14 @@ def render(df: pd.DataFrame):
         hovermode="x unified",
     )
     apply_chart_style(fig_gvhb_pct)
-    st.plotly_chart(fig_gvhb_pct, use_container_width=True)
+    all_pct_vals = pct_kh + pct_mn + pct_vh + pct_tot
+    pct_y_max = max((v for v in all_pct_vals if v > 0), default=100)
+    fig_gvhb_pct.update_yaxes(range=[0, pct_y_max * 1.18])
+    st.plotly_chart(fig_gvhb_pct, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── D. LN Sau Thuế ───────────────────────────────────────
     st.plotly_chart(
         line_tt_kh(lnst_vals, lnst_kh, "LN Sau Thuế", color=COLOR_INFO),
-        use_container_width=True,
+        use_container_width=True, config=MODEBAR_CONFIG,
     )
 

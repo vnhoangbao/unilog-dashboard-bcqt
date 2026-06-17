@@ -14,7 +14,7 @@ from config import (
 from data_loader import get_metric, get_metric_by_bu, get_metric_plan
 from utils import (
     fmt_ty, CHART_LAYOUT, CHART_LAYOUT_NO_MARGIN, apply_chart_style,
-    month_display_label, month_sort_key,
+    month_display_label, month_sort_key, MODEBAR_CONFIG,
 )
 
 
@@ -186,29 +186,45 @@ def render(df: pd.DataFrame):
             title=dict(text="P&L Waterfall (Tỷ đồng)", font=dict(size=13)),
             height=340, showlegend=False, yaxis_title="Tỷ đồng",
         )
+        wf_steps = [0, dt_tt/1e9, ln_tt/1e9, hd_tt/1e9, st_tt/1e9]
+        wf_min = min(wf_steps)
+        wf_max = max(wf_steps)
+        fig_wf.update_yaxes(range=[wf_min * 1.15, wf_max * 1.15])
         apply_chart_style(fig_wf)
-        st.plotly_chart(fig_wf, use_container_width=True)
+        st.plotly_chart(fig_wf, use_container_width=True, config=MODEBAR_CONFIG)
 
     with col_pie:
-        dt_by_bu   = get_metric_by_bu(df, STT_DT, sel_months, sel_buses)
-        pie_labels = [bu for bu, v in dt_by_bu.items() if v > 0]
-        pie_values = [v  for v  in dt_by_bu.values() if v > 0]
+        dt_by_bu  = get_metric_by_bu(df, STT_DT, sel_months, sel_buses)
+        dt_labels = [bu for bu, v in dt_by_bu.items() if v > 0]
+        dt_vals   = [v  for v  in dt_by_bu.values() if v > 0]
 
-        if pie_values:
+        if dt_vals:
+            total = sum(dt_vals)
+            custom_texts = []
+            for name, v in zip(dt_labels, dt_vals):
+                pct = v / total * 100 if total > 0 else 0
+                if pct >= 5:
+                    custom_texts.append(f"{name}<br>{pct:.1f}%")
+                else:
+                    custom_texts.append(f"{pct:.1f}%")
+
             fig_pie = go.Figure(go.Pie(
-                labels=pie_labels, values=pie_values,
+                labels=dt_labels, values=dt_vals,
                 hole=0.42,
-                textinfo="percent+label",
+                text=custom_texts,
+                textinfo='text',
+                textposition='auto',
+                insidetextorientation='radial',
                 textfont=dict(size=10),
                 hovertemplate="%{label}<br>%{value:,.0f}<br>%{percent}<extra></extra>",
             ))
             fig_pie.update_layout(
                 **CHART_LAYOUT_NO_MARGIN,
-                margin=dict(l=10, r=10, t=40, b=10),
+                margin=dict(l=40, r=120, t=40, b=40),
                 title=dict(text="Cơ cấu Doanh thu theo Đơn vị", font=dict(size=13)),
-                height=340, showlegend=False,
+                height=380, showlegend=False,
             )
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, use_container_width=True, config=MODEBAR_CONFIG)
         else:
             st.info("Không có dữ liệu doanh thu.")
 
@@ -234,6 +250,10 @@ def render(df: pd.DataFrame):
             for pos in text_positions
         ]
 
+        x_min = min(bar_x) if bar_x else 0
+        x_max = max(bar_x) if bar_x else 1
+        x_range = [x_min * 1.18 if x_min < 0 else 0, x_max * 1.18]
+
         fig_bar = go.Figure(go.Bar(
             x=bar_x, y=bar_labels, orientation="h",
             marker_color=bar_colors,
@@ -247,6 +267,7 @@ def render(df: pd.DataFrame):
         fig_bar.update_layout(
             margin=dict(l=150, r=60, t=30, b=30),
             height=max(280, len(bar_labels) * 38 + 60),
+            xaxis=dict(range=x_range),
         )
         apply_chart_style(fig_bar, horizontal=True)
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, use_container_width=True, config=MODEBAR_CONFIG)

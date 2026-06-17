@@ -17,7 +17,7 @@ from data_loader import get_metric, get_metric_plan, get_metric_multi, get_metri
 from utils import (
     fmt_ty, CHART_LAYOUT, apply_chart_style,
     month_display_label, month_sort_key, smart_textpos,
-    fix_chart_yrange_and_labels,
+    fix_chart_yrange_and_labels, MODEBAR_CONFIG,
 )
 
 
@@ -136,7 +136,7 @@ def render(df: pd.DataFrame):
         plan_vals=[v / 1e9 for v in y_cp_kh],
         value_fmt="ty",
     )
-    st.plotly_chart(fig_cp, use_container_width=True)
+    st.plotly_chart(fig_cp, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── SECTION C: % CPQL / DT ───────────────────────────────
     pct_cp_tt = [cp / dt * 100 if dt else 0 for cp, dt in zip(y_cp_tt, y_dt_tt)]
@@ -177,7 +177,7 @@ def render(df: pd.DataFrame):
         plan_vals=pct_cp_kh,
         value_fmt="pct",
     )
-    st.plotly_chart(fig_pct, use_container_width=True)
+    st.plotly_chart(fig_pct, use_container_width=True, config=MODEBAR_CONFIG)
 
     st.divider()
 
@@ -224,6 +224,11 @@ def render(df: pd.DataFrame):
                 textposition="outside",
                 hovertemplate="<b>%{y}</b><br>Kế hoạch: %{x:,.2f} Tỷ<extra></extra>",
             ))
+        all_dept_x = [dept_tt[d] / 1e9 for d in sorted_depts]
+        if has_kh_dept:
+            all_dept_x += [dept_kh.get(d, 0) / 1e9 for d in sorted_depts]
+        x_max_dept = max((v for v in all_dept_x if v > 0), default=1)
+
         fig_gt.update_layout(
             **CHART_LAYOUT, barmode="group",
             title=dict(text="Chi phí bộ phận gián tiếp TT vs KH", font=dict(size=13)),
@@ -232,8 +237,9 @@ def render(df: pd.DataFrame):
             height=max(300, len(sorted_depts) * 55 + 100),
             hovermode="y unified",
         )
+        fig_gt.update_xaxes(range=[0, x_max_dept * 1.18])
         apply_chart_style(fig_gt, horizontal=True)
-        st.plotly_chart(fig_gt, use_container_width=True)
+        st.plotly_chart(fig_gt, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── SECTION E: % CP gián tiếp / DT theo tháng ───────────
     cpgt_d   = get_metric_stt_range(df, STT_CPGT_FROM, STT_CPGT_TO, sel_months, sel_buses)
@@ -287,4 +293,4 @@ def render(df: pd.DataFrame):
         plan_vals=pct_cpgt_kh,
         value_fmt="pct",
     )
-    st.plotly_chart(fig_pgt, use_container_width=True)
+    st.plotly_chart(fig_pgt, use_container_width=True, config=MODEBAR_CONFIG)

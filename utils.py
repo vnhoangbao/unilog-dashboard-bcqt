@@ -75,6 +75,15 @@ CHART_LAYOUT = dict(
 # Dùng khi cần truyền margin riêng để tránh duplicate keyword
 CHART_LAYOUT_NO_MARGIN = {k: v for k, v in CHART_LAYOUT.items() if k != "margin"}
 
+MODEBAR_CONFIG = {
+    'modeBarButtonsToRemove': [
+        'zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d',
+        'autoScale2d', 'resetScale2d',
+        'select2d', 'lasso2d', 'toggleSpikelines',
+    ],
+    'displaylogo': False,
+}
+
 
 def smart_textpos(n: int) -> list:
     """Trả về list textposition tránh bị cắt ở 2 đầu trục."""
