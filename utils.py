@@ -283,7 +283,7 @@ def style_heat_red(df: pd.DataFrame, col: str) -> pd.DataFrame.style:
         b = int(68  + (255 - 68)  * (1 - intensity))
         return f"background-color: rgba({r},{g},{b},0.6); color: #7f1d1d"
 
-    return df.style.applymap(_color, subset=[col])
+    return df.style.map(_color, subset=[col])
 
 
 def style_completion(df: pd.DataFrame, col: str) -> pd.DataFrame.style:
@@ -299,7 +299,7 @@ def style_completion(df: pd.DataFrame, col: str) -> pd.DataFrame.style:
             return "background-color: #fffbeb; color: #92400e"
         return "background-color: #f0fdf4; color: #166534"
 
-    return df.style.applymap(_color, subset=[col])
+    return df.style.map(_color, subset=[col])
 
 
 def fix_chart_yrange_and_labels(
