@@ -8,8 +8,8 @@ import pandas as pd
 import streamlit as st
 
 from config import (
-    TG_PHONG, TG_PHANLOAI, TG_THANG, TG_CONGVIEC, TG_OWNER, TG_DVL, TG_MDTH,
-    DT_CONGVIEC, DT_CHITIET, DT_THANG, DT_TRANGTHAI, DT_KETQUA, DT_TIEPTHEO,
+    TG_ID, TG_PHONG, TG_PHANLOAI, TG_THANG, TG_CONGVIEC, TG_OWNER, TG_DVL, TG_MDTH,
+    DT_TARGET_ID, DT_CONGVIEC, DT_CHITIET, DT_THANG, DT_TRANGTHAI, DT_KETQUA, DT_TIEPTHEO,
     TRANG_THAI_COLORS, TRANG_THAI_DEFAULT, COMPLETION_THRESHOLDS,
 )
 from data_loader import check_columns
@@ -182,6 +182,12 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
         dfd = df_detail.copy()
         if sel_dt_thang:
             dfd = dfd[dfd[DT_THANG].isin(sel_dt_thang)]
+
+        # df_detail không có cột Phòng trực tiếp — lọc theo Phòng qua khóa
+        # quan hệ TARGETID (TG_ID ở target ↔ DT_TARGET_ID ở detail)
+        if sel_phong and has_phong and TG_ID in df_target.columns and DT_TARGET_ID in dfd.columns:
+            target_ids_phong = df_target.loc[df_target[TG_PHONG].isin(sel_phong), TG_ID]
+            dfd = dfd[dfd[DT_TARGET_ID].isin(target_ids_phong)]
 
         st.markdown("#### Chi tiết mục tiêu và công việc đã thực hiện theo tháng")
 
