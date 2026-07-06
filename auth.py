@@ -42,12 +42,7 @@ def check_login(username: str, password: str) -> dict | None:
     """
     df = load_users()
     if df.empty:
-        st.error("Không đọc được danh sách user.")
         return None
-
-    # Debug: chỉ hiện TÊN cột để tìm lỗi KeyError, KHÔNG hiện dữ liệu —
-    # trang login public, in cả bảng sẽ lộ password_hash cho bất kỳ ai ghé app
-    st.write("Cột trong sheet:", df.columns.tolist())
 
     # Tìm cột username
     user_col = None
@@ -142,9 +137,10 @@ def render_login_page():
             user = check_login(username, password)
             if user:
                 st.session_state["logged_in"] = True
-                st.session_state["username"] = user[US_USERNAME]
+                st.session_state["username"] = user.get(US_USERNAME, username)
                 st.session_state["role"] = user.get(US_ROLE, "viewer")
                 st.rerun()
+                st.stop()
             else:
                 st.error("Sai tài khoản hoặc mật khẩu.")
 

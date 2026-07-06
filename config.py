@@ -110,7 +110,7 @@ COMPLETION_THRESHOLDS = {
 
 # ─── CỘT: users (đăng nhập) ──────────────────────────────────
 US_USERNAME = "Username"
-US_PASSWORD = "password_hash"
+US_PASSWORD = "password"
 US_ROLE     = "role"
 US_ACTIVE   = "active"
 US_NOTE     = "note"
