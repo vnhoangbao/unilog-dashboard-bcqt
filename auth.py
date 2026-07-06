@@ -22,6 +22,7 @@ def load_users() -> pd.DataFrame:
         )
         df = pd.read_csv(url, dtype=str)
         df.columns = [c.strip() for c in df.columns]
+        print(f"[auth debug] Cột thực tế trong sheet users: {list(df.columns)}")  # TODO: xóa sau khi fix xong
         df = df[df[US_ACTIVE].astype(str).str.upper() == "TRUE"]
         return df
     except Exception as e:
@@ -45,7 +46,17 @@ def check_login(username: str, password: str) -> dict | None:
     row = df[df[US_USERNAME].str.strip() == username.strip()]
     if row.empty:
         return None
-    stored = str(row.iloc[0][US_PASSWORD]).strip()
+
+    # Thử cả 2 tên cột có thể có — sheet thực tế đang dùng "password"
+    # thay vì US_PASSWORD ("password_hash") khai báo trong config.py
+    pw_col = None
+    for col_name in [US_PASSWORD, "password_hash", "password", "Password", "PASSWORD"]:
+        if col_name in row.iloc[0].index:
+            pw_col = col_name
+            break
+    if pw_col is None:
+        return None
+    stored = str(row.iloc[0][pw_col]).strip()
     # So sánh plaintext trước, sau đó hash
     if password == stored or hash_password(password) == stored:
         return row.iloc[0].to_dict()
