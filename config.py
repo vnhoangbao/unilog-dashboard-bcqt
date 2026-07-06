@@ -6,13 +6,16 @@
 SHEET_ID  = "1F-W0BbBqzKKr-wCXZJBswW-afBpYkTxvvtHT6AdL77I"
 CACHE_TTL = 300   # giây — refresh mỗi 5 phút
 
+# Sheet "users" nằm ở file Google Sheet RIÊNG (không chung với SHEET_ID ở trên)
+# để giới hạn phạm vi ai có thể xem được password_hash qua link chia sẻ
+USERS_SHEET_ID = "1OMd5vo6kELsp6h9lVReOlzQDgKbDACZnXrAi2CdhBIM"
+
 SHEET_GIDS = {
     "full_grouped": "353917314",
     "cong_no":      "2111484222",
     "target":       "1974781100",
     "detail":       "1080595888",
-    # TODO: thay bằng gid thật — mở Google Sheet, bấm tab "users", lấy gid trên URL
-    "users":        "GID_CUA_SHEET_USERS",
+    "users":        "0",
 }
 
 # ─── CỘT: data_full_grouped (LONG FORMAT) ────────────────────

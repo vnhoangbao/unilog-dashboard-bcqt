@@ -7,14 +7,19 @@ import hashlib
 import pandas as pd
 import streamlit as st
 
-from data_loader import sheet_url
-from config import US_USERNAME, US_PASSWORD, US_ROLE, US_ACTIVE, COLOR_PRIMARY
+from config import (
+    US_USERNAME, US_PASSWORD, US_ROLE, US_ACTIVE, COLOR_PRIMARY,
+    USERS_SHEET_ID, SHEET_GIDS,
+)
 
 
 def load_users() -> pd.DataFrame:
-    """Load danh sách user active từ Google Sheet."""
+    """Load danh sách user active từ Google Sheet riêng (không chung sheet dữ liệu BCQT)."""
     try:
-        url = sheet_url("users")
+        url = (
+            f"https://docs.google.com/spreadsheets/d/"
+            f"{USERS_SHEET_ID}/export?format=csv&gid={SHEET_GIDS['users']}"
+        )
         df = pd.read_csv(url, dtype=str)
         df.columns = [c.strip() for c in df.columns]
         df = df[df[US_ACTIVE].astype(str).str.upper() == "TRUE"]
