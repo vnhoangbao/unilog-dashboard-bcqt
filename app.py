@@ -5,6 +5,7 @@
 
 import streamlit as st
 from config import PAGE_NAMES, COLOR_PRIMARY
+from auth import require_login, logout
 
 st.set_page_config(
     page_title="BCQT | U&I Logistics",
@@ -12,6 +13,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+require_login()
 
 st.markdown("""
 <style>
@@ -140,6 +143,12 @@ with st.sidebar:
     if st.button("🔄 Làm mới dữ liệu", use_container_width=True):
         st.cache_data.clear()
         st.rerun()
+
+    st.sidebar.markdown("---")
+    col1, col2 = st.sidebar.columns([2, 1])
+    col1.markdown(f"👤 **{st.session_state.get('username', '')}**")
+    if col2.button("Đăng xuất"):
+        logout()
 
 st.markdown(
     f"<h2 style='margin:0 0 16px; color:{COLOR_PRIMARY}; font-size:20px'>{page}</h2>",

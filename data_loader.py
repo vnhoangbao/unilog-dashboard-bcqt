@@ -22,6 +22,11 @@ def _sheet_url(gid: str) -> str:
     )
 
 
+def sheet_url(name: str) -> str:
+    """Build URL CSV export cho 1 sheet theo tên khai báo trong SHEET_GIDS (dùng ở auth.py)."""
+    return _sheet_url(SHEET_GIDS[name])
+
+
 # ─── LOAD: data_full_grouped (long format) ──────────────────
 @st.cache_data(ttl=CACHE_TTL, show_spinner="Đang tải dữ liệu hoạt động...")
 def load_full_grouped() -> pd.DataFrame:

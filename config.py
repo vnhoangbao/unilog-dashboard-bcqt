@@ -11,6 +11,8 @@ SHEET_GIDS = {
     "cong_no":      "2111484222",
     "target":       "1974781100",
     "detail":       "1080595888",
+    # TODO: thay bằng gid thật — mở Google Sheet, bấm tab "users", lấy gid trên URL
+    "users":        "GID_CUA_SHEET_USERS",
 }
 
 # ─── CỘT: data_full_grouped (LONG FORMAT) ────────────────────
@@ -102,6 +104,13 @@ COMPLETION_THRESHOLDS = {
     "danger":  70,
     "warning": 90,
 }
+
+# ─── CỘT: users (đăng nhập) ──────────────────────────────────
+US_USERNAME = "Username"
+US_PASSWORD = "password_hash"
+US_ROLE     = "role"
+US_ACTIVE   = "active"
+US_NOTE     = "note"
 
 # ─── UI / NAVIGATION ─────────────────────────────────────────
 PAGE_NAMES = [
