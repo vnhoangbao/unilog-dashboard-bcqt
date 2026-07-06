@@ -15,18 +15,18 @@ from config import (
 
 def load_users() -> pd.DataFrame:
     """Load danh sách user active từ Google Sheet riêng (không chung sheet dữ liệu BCQT)."""
+    url = (
+        f"https://docs.google.com/spreadsheets/d/"
+        f"{USERS_SHEET_ID}/export?format=csv&gid={SHEET_GIDS['users']}"
+    )
     try:
-        url = (
-            f"https://docs.google.com/spreadsheets/d/"
-            f"{USERS_SHEET_ID}/export?format=csv&gid={SHEET_GIDS['users']}"
-        )
-        df = pd.read_csv(url, dtype=str)
-        df.columns = [c.strip() for c in df.columns]
-        print(f"[auth debug] Cột thực tế trong sheet users: {list(df.columns)}")  # TODO: xóa sau khi fix xong
-        df = df[df[US_ACTIVE].astype(str).str.upper() == "TRUE"]
+        df = pd.read_csv(url)
+        df.columns = [str(c).strip() for c in df.columns]
+        if US_ACTIVE in df.columns:
+            df = df[df[US_ACTIVE].astype(str).str.upper().str.strip() == "TRUE"]
         return df
     except Exception as e:
-        st.error(f"Không load được danh sách user: {e}")
+        st.error(f"Lỗi đọc sheet users: {e}")
         return pd.DataFrame()
 
 
@@ -42,24 +42,44 @@ def check_login(username: str, password: str) -> dict | None:
     """
     df = load_users()
     if df.empty:
+        st.error("Không đọc được danh sách user.")
         return None
-    row = df[df[US_USERNAME].str.strip() == username.strip()]
+
+    # Debug: chỉ hiện TÊN cột để tìm lỗi KeyError, KHÔNG hiện dữ liệu —
+    # trang login public, in cả bảng sẽ lộ password_hash cho bất kỳ ai ghé app
+    st.write("Cột trong sheet:", df.columns.tolist())
+
+    # Tìm cột username
+    user_col = None
+    for c in [US_USERNAME, "Username", "username", "USER", "user"]:
+        if c in df.columns:
+            user_col = c
+            break
+    if user_col is None:
+        st.error(f"Không tìm thấy cột Username. Cột hiện có: {df.columns.tolist()}")
+        return None
+
+    # Tìm cột password
+    pw_col = None
+    for c in [US_PASSWORD, "password_hash", "password", "Password", "PASSWORD"]:
+        if c in df.columns:
+            pw_col = c
+            break
+    if pw_col is None:
+        st.error(f"Không tìm thấy cột password. Cột hiện có: {df.columns.tolist()}")
+        return None
+
+    row = df[df[user_col].astype(str).str.strip() == username.strip()]
     if row.empty:
         return None
 
-    # Thử cả 2 tên cột có thể có — sheet thực tế đang dùng "password"
-    # thay vì US_PASSWORD ("password_hash") khai báo trong config.py
-    pw_col = None
-    for col_name in [US_PASSWORD, "password_hash", "password", "Password", "PASSWORD"]:
-        if col_name in row.iloc[0].index:
-            pw_col = col_name
-            break
-    if pw_col is None:
-        return None
     stored = str(row.iloc[0][pw_col]).strip()
-    # So sánh plaintext trước, sau đó hash
-    if password == stored or hash_password(password) == stored:
-        return row.iloc[0].to_dict()
+    if password.strip() == stored or hash_password(password) == stored:
+        user = row.iloc[0].to_dict()
+        # Chuẩn hóa: đảm bảo luôn có key US_USERNAME dù cột thật trong sheet
+        # tên khác (vd "username" thay vì "Username") — render_login_page() cần key này
+        user[US_USERNAME] = user[user_col]
+        return user
     return None
 
 
