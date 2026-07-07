@@ -57,8 +57,10 @@ def render(df: pd.DataFrame):
         sel_months = [month_map[l] for l in sel_labels]
 
         with st.expander("🔗"):
-            link_kpi_thang = st.checkbox("KPI Cards",     value=True, key="link_p0_kpi_thang")
-            link_wf_thang  = st.checkbox("P&L Waterfall", value=True, key="link_p0_wf_thang")
+            link_kpi_thang   = st.checkbox("KPI Cards",         value=True, key="link_p0_kpi_thang")
+            link_wf_thang    = st.checkbox("P&L Waterfall",     value=True, key="link_p0_wf_thang")
+            link_donut_thang = st.checkbox("Cơ cấu Doanh thu",  value=True, key="link_p0_donut_thang")
+            link_bar_thang   = st.checkbox("P&L theo BU",       value=True, key="link_p0_bar_thang")
 
         st.markdown("**Đơn vị**")
         sel_buses = st.multiselect(
@@ -225,9 +227,10 @@ def render(df: pd.DataFrame):
         st.plotly_chart(fig_wf, use_container_width=True, config=MODEBAR_CONFIG)
 
     with col_pie:
-        # Donut luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị";
-        # theo tháng đã chọn (không có toggle link riêng cho chart này)
-        dt_by_bu  = get_metric_by_bu(df, STT_DT, sel_months, all_bus)
+        st.caption(link_badge(link_donut_thang))
+        # Donut luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị"
+        # (biểu đồ vốn để xem cơ cấu theo TẤT CẢ đơn vị — lọc BU sẽ làm mất ý nghĩa)
+        dt_by_bu  = get_metric_by_bu(df, STT_DT, get_months(link_donut_thang), all_bus)
         dt_labels = [bu for bu, v in dt_by_bu.items() if v > 0]
         dt_vals   = [v  for v  in dt_by_bu.values() if v > 0]
 
@@ -263,9 +266,10 @@ def render(df: pd.DataFrame):
             st.info("Không có dữ liệu doanh thu.")
 
     # ── BAR NGANG — LN Sau Thuế theo đơn vị ─────────────────
-    # Bar chart luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị";
-    # theo tháng đã chọn (không có toggle link riêng cho chart này)
-    lnst_by_bu_all = get_metric_by_bu(df, STT_LNST, sel_months, all_bus)
+    st.caption(link_badge(link_bar_thang))
+    # Bar chart luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị"
+    # (biểu đồ vốn để xem breakdown theo TẤT CẢ đơn vị — lọc BU sẽ làm mất ý nghĩa)
+    lnst_by_bu_all = get_metric_by_bu(df, STT_LNST, get_months(link_bar_thang), all_bus)
     if lnst_by_bu_all:
         # Sort ascending: -7.41 đầu (dưới cùng), 13.85 cuối (trên cùng)
         raw_vals   = [v / 1e9 for v in lnst_by_bu_all.values()]

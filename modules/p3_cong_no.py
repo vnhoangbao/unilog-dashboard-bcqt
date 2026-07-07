@@ -126,8 +126,10 @@ def render(df: pd.DataFrame):
             sel_dvt = []
 
         with st.expander("🔗"):
-            link_bp_bp = st.checkbox("Bảng theo bộ phận",    value=True, key="link_p3_bp_bp")
-            link_kh_bp = st.checkbox("Bảng theo khách hàng", value=True, key="link_p3_kh_bp")
+            link_tong_bp = st.checkbox("Tổng công nợ quá hạn",         value=True, key="link_p3_tong_bp")
+            link_bp_bp   = st.checkbox("Bảng theo bộ phận",            value=True, key="link_p3_bp_bp")
+            link_kh_bp   = st.checkbox("Bảng theo khách hàng",         value=True, key="link_p3_kh_bp")
+            link_full_bp = st.checkbox("Bảng theo bộ phận + ngày",     value=True, key="link_p3_full_bp")
 
     # ── LỌC ─────────────────────────────────────────────────
     dff = df.copy()
@@ -139,13 +141,15 @@ def render(df: pd.DataFrame):
         dff = dff[dff[CN_DVT].isin(sel_dvt)]
 
     # ── TỔNG CÔNG NỢ ────────────────────────────────────────
-    total_vnd = dff[dff[CN_DVT] == "VND"][CN_TIEN].sum() if has_dvt and "VND" in (sel_dvt or []) else dff[CN_TIEN].sum()
+    data_tong = dff if link_tong_bp else df
+    total_vnd = data_tong[data_tong[CN_DVT] == "VND"][CN_TIEN].sum() if has_dvt and "VND" in (sel_dvt or []) else data_tong[CN_TIEN].sum()
+    st.caption(link_badge(link_tong_bp))
     st.markdown(
         f"<div style='padding:12px 16px; background:#fef2f2; border:0.5px solid #fecaca; "
         f"border-radius:8px; margin-bottom:16px;'>"
         f"<p style='margin:0; font-size:12px; color:#b91c1c'>⚠️ Tổng công nợ quá hạn</p>"
         f"<p style='margin:4px 0 0; font-size:24px; font-weight:600; color:#991b1b'>"
-        f"{dff[CN_TIEN].sum():,.0f}</p></div>",
+        f"{data_tong[CN_TIEN].sum():,.0f}</p></div>",
         unsafe_allow_html=True,
     )
 
@@ -196,6 +200,8 @@ def render(df: pd.DataFrame):
     # ── BẢNG 3: THEO BỘ PHẬN + NGÀY QUÁ HẠN ────────────────
     if has_khach and has_ngay:
         st.markdown("#### Bảng công nợ theo bộ phận và số ngày quá hạn")
+        st.caption(link_badge(link_full_bp))
+        data_full = dff if link_full_bp else df
         grp_cols3 = [CN_BP]
         if has_khach:
             grp_cols3.append(CN_KHACH)
@@ -204,7 +210,7 @@ def render(df: pd.DataFrame):
         if has_dvt:
             grp_cols3.append(CN_DVT)
 
-        by_full = dff.groupby(grp_cols3)[CN_TIEN].sum().reset_index()
+        by_full = data_full.groupby(grp_cols3)[CN_TIEN].sum().reset_index()
         by_full = by_full.sort_values(CN_TIEN, ascending=False)
 
         rename_full = {

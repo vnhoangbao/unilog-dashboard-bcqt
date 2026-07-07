@@ -47,6 +47,7 @@ def render(df: pd.DataFrame):
         sel_months = [month_map[l] for l in sel_labels]
 
         with st.expander("🔗"):
+            link_kpi_thang   = st.checkbox("Chi phí QLDN (tổng quan)",     value=True, key="link_p2_kpi_thang")
             link_cp_thang    = st.checkbox("CP QLDN theo thời gian",       value=True, key="link_p2_cp_thang")
             link_pctcp_thang = st.checkbox("% CP QLDN / Doanh thu",        value=True, key="link_p2_pctcp_thang")
             link_dept_thang  = st.checkbox("CP theo bộ phận",              value=True, key="link_p2_dept_thang")
@@ -59,6 +60,7 @@ def render(df: pd.DataFrame):
         )
 
         with st.expander("🔗"):
+            link_kpi_bu   = st.checkbox("Chi phí QLDN (tổng quan)",     value=True, key="link_p2_kpi_bu")
             link_cp_bu    = st.checkbox("CP QLDN theo thời gian",       value=True, key="link_p2_cp_bu")
             link_pctcp_bu = st.checkbox("% CP QLDN / Doanh thu",        value=True, key="link_p2_pctcp_bu")
             link_dept_bu  = st.checkbox("CP theo bộ phận",              value=True, key="link_p2_dept_bu")
@@ -86,10 +88,11 @@ def render(df: pd.DataFrame):
         d = get_metric_multi(df, stt_list, months, bu, plan=plan)
         return [d.get(m, 0) for m in months]
 
-    # ── SECTION A: Progress bar màu động (luôn theo bộ lọc tháng & BU đã chọn) ──
-    months_sorted = sorted(sel_months)
-    tot_cpql_tt = sum(series_multi(STT_CPQL_LIST, months_sorted, sel_buses))
-    tot_cpql_kh = sum(series_multi(STT_CPQL_LIST, months_sorted, sel_buses, plan=True))
+    # ── SECTION A: Progress bar màu động (theo link riêng tháng & BU) ──
+    m_kpi  = get_months(link_kpi_thang)
+    bu_kpi = get_bu(link_kpi_bu)
+    tot_cpql_tt = sum(series_multi(STT_CPQL_LIST, m_kpi, bu_kpi))
+    tot_cpql_kh = sum(series_multi(STT_CPQL_LIST, m_kpi, bu_kpi, plan=True))
 
     pct      = min(tot_cpql_tt / tot_cpql_kh, 1.5) if tot_cpql_kh > 0 else 0
     is_good  = tot_cpql_tt < tot_cpql_kh
@@ -98,6 +101,7 @@ def render(df: pd.DataFrame):
     bg_col   = "#f0fdf4" if is_good else "#fef2f2"
     label    = "✅ Đang tiết kiệm chi phí" if is_good else "⚠️ Đang vượt kế hoạch"
 
+    st.caption(link_badge(link_kpi_thang))
     st.markdown(f"""
     <div style="padding:16px 20px; background:{bg_col};
                 border-radius:10px; margin-bottom:16px">

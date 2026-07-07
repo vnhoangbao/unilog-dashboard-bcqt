@@ -46,6 +46,7 @@ def render(df: pd.DataFrame):
         sel_months = [month_map[l] for l in sel_labels]
 
         with st.expander("🔗"):
+            link_kpi_thang     = st.checkbox("KPI Cards",   value=True, key="link_p1_kpi_thang")
             link_dt_thang      = st.checkbox("Doanh thu",   value=True, key="link_p1_dt_thang")
             link_gop_thang     = st.checkbox("LN Gộp",      value=True, key="link_p1_gop_thang")
             link_hd_thang      = st.checkbox("LN HĐKD",     value=True, key="link_p1_hd_thang")
@@ -60,6 +61,7 @@ def render(df: pd.DataFrame):
         )
 
         with st.expander("🔗"):
+            link_kpi_bu     = st.checkbox("KPI Cards",   value=True, key="link_p1_kpi_bu")
             link_dt_bu      = st.checkbox("Doanh thu",   value=True, key="link_p1_dt_bu")
             link_gop_bu     = st.checkbox("LN Gộp",      value=True, key="link_p1_gop_bu")
             link_hd_bu      = st.checkbox("LN HĐKD",     value=True, key="link_p1_hd_bu")
@@ -85,15 +87,17 @@ def render(df: pd.DataFrame):
         d = fn(df, stt, months, bu)
         return [d.get(m, 0) for m in months]
 
-    # ── KPI CARDS (luôn theo bộ lọc tháng & BU đã chọn — không có toggle riêng) ──
-    months_sorted = sorted(sel_months)
-    tot_dt     = sum(series(STT_DT,     months_sorted, sel_buses))
-    tot_lnst   = sum(series(STT_LNST,   months_sorted, sel_buses))
-    tot_ln_gop = sum(series(STT_LN_GOP, months_sorted, sel_buses))
+    # ── KPI CARDS (theo link riêng tháng & BU) ──
+    m_kpi  = get_months(link_kpi_thang)
+    bu_kpi = get_bu(link_kpi_bu)
+    tot_dt     = sum(series(STT_DT,     m_kpi, bu_kpi))
+    tot_lnst   = sum(series(STT_LNST,   m_kpi, bu_kpi))
+    tot_ln_gop = sum(series(STT_LN_GOP, m_kpi, bu_kpi))
     gm_pct  = tot_ln_gop / tot_dt * 100 if tot_dt else 0.0
     npm_pct = tot_lnst   / tot_dt * 100 if tot_dt else 0.0
 
     st.markdown("#### Lũy kế kỳ đã chọn")
+    st.caption(link_badge(link_kpi_thang))
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Doanh thu",   fmt_ty(tot_dt))
     c2.metric("LN Sau Thuế", fmt_ty(tot_lnst))
