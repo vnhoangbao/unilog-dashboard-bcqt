@@ -110,6 +110,12 @@ st.markdown("""
       border-radius: 8px;
   }
 
+  /* Force sidebar white text - nuclear option */
+  section[data-testid="stSidebar"] .stCheckbox label p { color: white !important; }
+  section[data-testid="stSidebar"] .stCheckbox span[data-baseweb] { color: white !important; }
+  section[data-testid="stSidebar"] details summary p { color: white !important; }
+  section[data-testid="stSidebar"] details div p { color: white !important; }
+  section[data-testid="stSidebar"] details label p { color: white !important; }
 
 </style>
 """, unsafe_allow_html=True)
