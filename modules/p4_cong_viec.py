@@ -13,7 +13,8 @@ from config import (
     TRANG_THAI_COLORS, TRANG_THAI_DEFAULT, COMPLETION_THRESHOLDS,
 )
 from data_loader import check_columns
-from utils import link_badge
+from utils import link_badge, linked_checkbox
+from prefs import load_prefs
 
 REQUIRED_TARGET = [TG_CONGVIEC]
 REQUIRED_DETAIL = [DT_THANG, DT_TRANGTHAI]
@@ -101,6 +102,8 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
     has_thang    = TG_THANG    in df_target.columns
     has_mdth     = TG_MDTH     in df_target.columns
 
+    prefs = load_prefs()
+
     # ── SIDEBAR FILTERS ──────────────────────────────────────
     with st.sidebar:
         st.markdown("### 🎛️ Bộ lọc — Trang 4")
@@ -112,8 +115,8 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
             sel_phong = []
 
         with st.expander("🔗"):
-            link_mt_phong = st.checkbox("Bảng mục tiêu", value=True, key="link_p4_mt_phong")
-            link_ct_phong = st.checkbox("Bảng chi tiết",  value=True, key="link_p4_ct_phong")
+            link_mt_phong = linked_checkbox("Bảng mục tiêu", "link_p4_mt_phong", prefs)
+            link_ct_phong = linked_checkbox("Bảng chi tiết",  "link_p4_ct_phong", prefs)
 
         if has_phanloai:
             all_phanloai = sorted(df_target[TG_PHANLOAI].dropna().unique().tolist())
@@ -130,8 +133,8 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
             sel_thang = []
 
         with st.expander("🔗"):
-            link_mt_thang = st.checkbox("Bảng mục tiêu", value=True, key="link_p4_mt_thang")
-            link_ct_thang = st.checkbox("Bảng chi tiết",  value=True, key="link_p4_ct_thang")
+            link_mt_thang = linked_checkbox("Bảng mục tiêu", "link_p4_mt_thang", prefs)
+            link_ct_thang = linked_checkbox("Bảng chi tiết",  "link_p4_ct_thang", prefs)
 
         all_months_detail = sorted(df_detail[DT_THANG].dropna().unique().tolist()) if ok_detail else []
 

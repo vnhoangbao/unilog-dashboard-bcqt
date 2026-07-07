@@ -18,8 +18,9 @@ from utils import (
     fmt_ty, CHART_LAYOUT, apply_chart_style,
     month_display_label, month_sort_key, smart_textpos,
     fix_chart_yrange_and_labels, MODEBAR_CONFIG, apply_responsive,
-    link_badge,
+    link_badge, linked_checkbox,
 )
+from prefs import load_prefs
 
 
 def render(df: pd.DataFrame):
@@ -35,6 +36,8 @@ def render(df: pd.DataFrame):
     active_labels = [month_display_label(m) for m in active_months]
     all_labels    = sorted(month_map.keys(), key=month_sort_key)
 
+    prefs = load_prefs()
+
     # ── SIDEBAR ──────────────────────────────────────────────
     with st.sidebar:
         st.markdown("### Bộ lọc — Trang 2")
@@ -47,11 +50,11 @@ def render(df: pd.DataFrame):
         sel_months = [month_map[l] for l in sel_labels]
 
         with st.expander("🔗"):
-            link_kpi_thang   = st.checkbox("Chi phí QLDN (tổng quan)",     value=True, key="link_p2_kpi_thang")
-            link_cp_thang    = st.checkbox("CP QLDN theo thời gian",       value=True, key="link_p2_cp_thang")
-            link_pctcp_thang = st.checkbox("% CP QLDN / Doanh thu",        value=True, key="link_p2_pctcp_thang")
-            link_dept_thang  = st.checkbox("CP theo bộ phận",              value=True, key="link_p2_dept_thang")
-            link_pctgt_thang = st.checkbox("% CP gián tiếp / Doanh thu",   value=True, key="link_p2_pctgt_thang")
+            link_kpi_thang   = linked_checkbox("Chi phí QLDN (tổng quan)",   "link_p2_kpi_thang",   prefs)
+            link_cp_thang    = linked_checkbox("CP QLDN theo thời gian",     "link_p2_cp_thang",    prefs)
+            link_pctcp_thang = linked_checkbox("% CP QLDN / Doanh thu",      "link_p2_pctcp_thang", prefs)
+            link_dept_thang  = linked_checkbox("CP theo bộ phận",            "link_p2_dept_thang",  prefs)
+            link_pctgt_thang = linked_checkbox("% CP gián tiếp / Doanh thu", "link_p2_pctgt_thang", prefs)
 
         st.markdown("**Đơn vị**")
         sel_buses = st.multiselect(
@@ -60,11 +63,11 @@ def render(df: pd.DataFrame):
         )
 
         with st.expander("🔗"):
-            link_kpi_bu   = st.checkbox("Chi phí QLDN (tổng quan)",     value=True, key="link_p2_kpi_bu")
-            link_cp_bu    = st.checkbox("CP QLDN theo thời gian",       value=True, key="link_p2_cp_bu")
-            link_pctcp_bu = st.checkbox("% CP QLDN / Doanh thu",        value=True, key="link_p2_pctcp_bu")
-            link_dept_bu  = st.checkbox("CP theo bộ phận",              value=True, key="link_p2_dept_bu")
-            link_pctgt_bu = st.checkbox("% CP gián tiếp / Doanh thu",   value=True, key="link_p2_pctgt_bu")
+            link_kpi_bu   = linked_checkbox("Chi phí QLDN (tổng quan)",   "link_p2_kpi_bu",   prefs)
+            link_cp_bu    = linked_checkbox("CP QLDN theo thời gian",     "link_p2_cp_bu",    prefs)
+            link_pctcp_bu = linked_checkbox("% CP QLDN / Doanh thu",      "link_p2_pctcp_bu", prefs)
+            link_dept_bu  = linked_checkbox("CP theo bộ phận",            "link_p2_dept_bu",  prefs)
+            link_pctgt_bu = linked_checkbox("% CP gián tiếp / Doanh thu", "link_p2_pctgt_bu", prefs)
 
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")

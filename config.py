@@ -115,6 +115,11 @@ US_ROLE     = "role"
 US_ACTIVE   = "active"
 US_NOTE     = "note"
 
+# ─── SHEET LƯU TRẠNG THÁI CHECKBOX LIÊN KẾT BỘ LỌC (🔗) ──────
+# Tab riêng trong file Google Sheet users (USERS_SHEET_ID) — cột A=pref_key, B=value (TRUE/FALSE)
+# Phải tạo tab này thủ công và share quyền Editor cho service account (xem prefs.py)
+PREFS_SHEET_TAB = "prefs"
+
 # ─── UI / NAVIGATION ─────────────────────────────────────────
 PAGE_NAMES = [
     "0. Tổng quan",

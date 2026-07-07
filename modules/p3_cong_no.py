@@ -10,7 +10,8 @@ from config import (
     CN_BP, CN_KHACH, CN_NGAY, CN_DVT, CN_TIEN, CN_NGAY_OPTIONS,
 )
 from data_loader import check_columns
-from utils import link_badge
+from utils import link_badge, linked_checkbox
+from prefs import load_prefs
 
 REQUIRED_COLS = [CN_BP, CN_TIEN]
 
@@ -106,6 +107,8 @@ def render(df: pd.DataFrame):
     has_ngay  = CN_NGAY  in df.columns
     has_dvt   = CN_DVT   in df.columns
 
+    prefs = load_prefs()
+
     # ── SIDEBAR FILTERS ──────────────────────────────────────
     with st.sidebar:
         st.markdown("### 🎛️ Bộ lọc — Trang 3")
@@ -126,10 +129,10 @@ def render(df: pd.DataFrame):
             sel_dvt = []
 
         with st.expander("🔗"):
-            link_tong_bp = st.checkbox("Tổng công nợ quá hạn",         value=True, key="link_p3_tong_bp")
-            link_bp_bp   = st.checkbox("Bảng theo bộ phận",            value=True, key="link_p3_bp_bp")
-            link_kh_bp   = st.checkbox("Bảng theo khách hàng",         value=True, key="link_p3_kh_bp")
-            link_full_bp = st.checkbox("Bảng theo bộ phận + ngày",     value=True, key="link_p3_full_bp")
+            link_tong_bp = linked_checkbox("Tổng công nợ quá hạn",     "link_p3_tong_bp", prefs)
+            link_bp_bp   = linked_checkbox("Bảng theo bộ phận",        "link_p3_bp_bp",   prefs)
+            link_kh_bp   = linked_checkbox("Bảng theo khách hàng",     "link_p3_kh_bp",   prefs)
+            link_full_bp = linked_checkbox("Bảng theo bộ phận + ngày", "link_p3_full_bp", prefs)
 
     # ── LỌC ─────────────────────────────────────────────────
     dff = df.copy()

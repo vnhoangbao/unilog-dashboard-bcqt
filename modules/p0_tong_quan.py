@@ -15,7 +15,9 @@ from data_loader import get_metric, get_metric_by_bu, get_metric_plan
 from utils import (
     fmt_ty, CHART_LAYOUT, CHART_LAYOUT_NO_MARGIN, apply_chart_style,
     month_display_label, month_sort_key, MODEBAR_CONFIG, apply_responsive,
+    linked_checkbox,
 )
+from prefs import load_prefs
 
 
 def _sum(d: dict) -> float:
@@ -43,6 +45,8 @@ def render(df: pd.DataFrame):
     active_labels = [month_display_label(m) for m in active_months]
     all_labels    = sorted(month_map.keys(), key=month_sort_key)
 
+    prefs = load_prefs()
+
     # ── SIDEBAR ──────────────────────────────────────────────
     with st.sidebar:
         st.markdown("### Bộ lọc — Tổng quan")
@@ -57,10 +61,10 @@ def render(df: pd.DataFrame):
         sel_months = [month_map[l] for l in sel_labels]
 
         with st.expander("🔗"):
-            link_kpi_thang   = st.checkbox("KPI Cards",         value=True, key="link_p0_kpi_thang")
-            link_wf_thang    = st.checkbox("P&L Waterfall",     value=True, key="link_p0_wf_thang")
-            link_donut_thang = st.checkbox("Cơ cấu Doanh thu",  value=True, key="link_p0_donut_thang")
-            link_bar_thang   = st.checkbox("P&L theo BU",       value=True, key="link_p0_bar_thang")
+            link_kpi_thang   = linked_checkbox("KPI Cards",        "link_p0_kpi_thang",   prefs)
+            link_wf_thang    = linked_checkbox("P&L Waterfall",    "link_p0_wf_thang",    prefs)
+            link_donut_thang = linked_checkbox("Cơ cấu Doanh thu", "link_p0_donut_thang", prefs)
+            link_bar_thang   = linked_checkbox("P&L theo BU",      "link_p0_bar_thang",   prefs)
 
         st.markdown("**Đơn vị**")
         sel_buses = st.multiselect(
@@ -72,8 +76,8 @@ def render(df: pd.DataFrame):
         )
 
         with st.expander("🔗"):
-            link_kpi_bu = st.checkbox("KPI Cards",     value=True, key="link_p0_kpi_bu")
-            link_wf_bu  = st.checkbox("P&L Waterfall", value=True, key="link_p0_wf_bu")
+            link_kpi_bu = linked_checkbox("KPI Cards",     "link_p0_kpi_bu", prefs)
+            link_wf_bu  = linked_checkbox("P&L Waterfall", "link_p0_wf_bu",  prefs)
 
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")

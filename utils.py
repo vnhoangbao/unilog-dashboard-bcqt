@@ -16,6 +16,22 @@ def link_badge(linked: bool) -> str:
     return "🔗 *Theo bộ lọc*" if linked else "📌 *Toàn bộ dữ liệu*"
 
 
+def linked_checkbox(label: str, key: str, prefs: dict, default: bool = True) -> bool:
+    """
+    Checkbox 🔗 có nhớ trạng thái qua Google Sheet (xem prefs.py).
+    prefs: dict lấy 1 lần từ prefs.load_prefs() ở đầu render() của mỗi trang.
+    Giá trị ban đầu ưu tiên lấy từ prefs đã lưu, nếu chưa có thì dùng `default`.
+    """
+    from prefs import save_pref
+
+    def _on_change():
+        save_pref(key, st.session_state[key])
+
+    return st.checkbox(
+        label, value=prefs.get(key, default), key=key, on_change=_on_change,
+    )
+
+
 # ─── MONTH LABELS ───────────────────────────────────────────
 
 def month_display_label(dt_str: str) -> str:

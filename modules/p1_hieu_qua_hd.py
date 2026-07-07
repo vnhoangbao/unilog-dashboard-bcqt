@@ -17,8 +17,9 @@ from utils import (
     fmt_ty, fmt_pct, CHART_LAYOUT, apply_chart_style,
     month_display_label, month_sort_key, smart_textpos,
     fix_chart_yrange_and_labels, MODEBAR_CONFIG, apply_responsive,
-    link_badge,
+    link_badge, linked_checkbox,
 )
+from prefs import load_prefs
 
 
 def render(df: pd.DataFrame):
@@ -34,6 +35,8 @@ def render(df: pd.DataFrame):
     active_labels = [month_display_label(m) for m in active_months]
     all_labels    = sorted(month_map.keys(), key=month_sort_key)
 
+    prefs = load_prefs()
+
     # ── SIDEBAR ──────────────────────────────────────────────
     with st.sidebar:
         st.markdown("### Bộ lọc — Trang 1")
@@ -46,13 +49,13 @@ def render(df: pd.DataFrame):
         sel_months = [month_map[l] for l in sel_labels]
 
         with st.expander("🔗"):
-            link_kpi_thang     = st.checkbox("KPI Cards",   value=True, key="link_p1_kpi_thang")
-            link_dt_thang      = st.checkbox("Doanh thu",   value=True, key="link_p1_dt_thang")
-            link_gop_thang     = st.checkbox("LN Gộp",      value=True, key="link_p1_gop_thang")
-            link_hd_thang      = st.checkbox("LN HĐKD",     value=True, key="link_p1_hd_thang")
-            link_gvhb_thang    = st.checkbox("GVHB",        value=True, key="link_p1_gvhb_thang")
-            link_pctgvhb_thang = st.checkbox("% GVHB",      value=True, key="link_p1_pctgvhb_thang")
-            link_lnst_thang    = st.checkbox("LN Sau Thuế", value=True, key="link_p1_lnst_thang")
+            link_kpi_thang     = linked_checkbox("KPI Cards",   "link_p1_kpi_thang",     prefs)
+            link_dt_thang      = linked_checkbox("Doanh thu",   "link_p1_dt_thang",      prefs)
+            link_gop_thang     = linked_checkbox("LN Gộp",      "link_p1_gop_thang",     prefs)
+            link_hd_thang      = linked_checkbox("LN HĐKD",     "link_p1_hd_thang",      prefs)
+            link_gvhb_thang    = linked_checkbox("GVHB",        "link_p1_gvhb_thang",    prefs)
+            link_pctgvhb_thang = linked_checkbox("% GVHB",      "link_p1_pctgvhb_thang", prefs)
+            link_lnst_thang    = linked_checkbox("LN Sau Thuế", "link_p1_lnst_thang",    prefs)
 
         st.markdown("**Đơn vị**")
         sel_buses = st.multiselect(
@@ -61,13 +64,13 @@ def render(df: pd.DataFrame):
         )
 
         with st.expander("🔗"):
-            link_kpi_bu     = st.checkbox("KPI Cards",   value=True, key="link_p1_kpi_bu")
-            link_dt_bu      = st.checkbox("Doanh thu",   value=True, key="link_p1_dt_bu")
-            link_gop_bu     = st.checkbox("LN Gộp",      value=True, key="link_p1_gop_bu")
-            link_hd_bu      = st.checkbox("LN HĐKD",     value=True, key="link_p1_hd_bu")
-            link_gvhb_bu    = st.checkbox("GVHB",        value=True, key="link_p1_gvhb_bu")
-            link_pctgvhb_bu = st.checkbox("% GVHB",      value=True, key="link_p1_pctgvhb_bu")
-            link_lnst_bu    = st.checkbox("LN Sau Thuế", value=True, key="link_p1_lnst_bu")
+            link_kpi_bu     = linked_checkbox("KPI Cards",   "link_p1_kpi_bu",     prefs)
+            link_dt_bu      = linked_checkbox("Doanh thu",   "link_p1_dt_bu",      prefs)
+            link_gop_bu     = linked_checkbox("LN Gộp",      "link_p1_gop_bu",     prefs)
+            link_hd_bu      = linked_checkbox("LN HĐKD",     "link_p1_hd_bu",      prefs)
+            link_gvhb_bu    = linked_checkbox("GVHB",        "link_p1_gvhb_bu",    prefs)
+            link_pctgvhb_bu = linked_checkbox("% GVHB",      "link_p1_pctgvhb_bu", prefs)
+            link_lnst_bu    = linked_checkbox("LN Sau Thuế", "link_p1_lnst_bu",    prefs)
 
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")
