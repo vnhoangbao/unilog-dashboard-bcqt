@@ -37,6 +37,27 @@ st.markdown("""
       color: #ffffff !important;
   }
 
+  /* ── SIDEBAR — chữ checkbox/expander/caption sáng hơn ── */
+  [data-testid="stSidebar"] label {
+      color: #e2e8f0 !important;
+  }
+  [data-testid="stSidebar"] .stCheckbox label p {
+      color: #e2e8f0 !important;
+  }
+  [data-testid="stSidebar"] .stCheckbox span {
+      color: #e2e8f0 !important;
+  }
+  [data-testid="stSidebar"] .stExpander p {
+      color: #cbd5e1 !important;
+  }
+  [data-testid="stSidebar"] .stExpander summary {
+      color: #e2e8f0 !important;
+  }
+  [data-testid="stSidebar"] small,
+  [data-testid="stSidebar"] .stCaption {
+      color: #94a3b8 !important;
+  }
+
   /* ── NỘI DUNG CHÍNH — NỀN SÁNG ── */
   [data-testid="stAppViewContainer"] > .main {
       background-color: #f8fafc;

@@ -61,6 +61,10 @@ def render(df: pd.DataFrame):
             link_donut   = st.checkbox("Cơ cấu Doanh thu", value=False, key="link_donut")
             link_bar_pnl = st.checkbox("P&L theo BU",      value=False, key="link_bar")
 
+            st.caption("Chọn biểu đồ bị ảnh hưởng khi đổi đơn vị (BU):")
+            link_kpi_bu = st.checkbox("KPI Cards (BU)",     value=True, key="link_p0_kpi_bu")
+            link_wf_bu  = st.checkbox("Waterfall (BU)",     value=True, key="link_p0_wf_bu")
+
         sel_buses = st.multiselect(
             "Chọn đơn vị",
             options=all_bus,
@@ -78,6 +82,9 @@ def render(df: pd.DataFrame):
     def get_months(linked: bool) -> list:
         return sel_months if linked else all_active_months
 
+    def get_bu(linked: bool) -> list:
+        return sel_buses if linked else all_bus
+
     # ── BADGE PERIOD ─────────────────────────────────────────
     first = month_display_label(sorted(sel_months)[0])
     last  = month_display_label(sorted(sel_months)[-1])
@@ -90,28 +97,30 @@ def render(df: pd.DataFrame):
         unsafe_allow_html=True,
     )
 
-    # ── LẤY SỐ LIỆU: KPI CARDS (theo link_kpi) ───────────────
+    # ── LẤY SỐ LIỆU: KPI CARDS (theo link_kpi / link_kpi_bu) ──
     kpi_months = get_months(link_kpi)
-    dt_tt     = _sum(get_metric(df,      STT_DT,     kpi_months, sel_buses))
-    dt_kh     = _sum(get_metric_plan(df, STT_DT_KH,  kpi_months, sel_buses))  # STT=5 có KH
-    ln_tt     = _sum(get_metric(df,      STT_LN_GOP, kpi_months, sel_buses))
-    ln_kh     = _sum(get_metric_plan(df, STT_LN_GOP, kpi_months, sel_buses))
-    hd_tt     = _sum(get_metric(df,      STT_LNHDKD, kpi_months, sel_buses))
-    hd_kh     = _sum(get_metric_plan(df, STT_LNHDKD, kpi_months, sel_buses))
-    st_tt     = _sum(get_metric(df,      STT_LNST,   kpi_months, sel_buses))
-    st_kh     = _sum(get_metric_plan(df, STT_LNST,   kpi_months, sel_buses))
+    kpi_bu     = get_bu(link_kpi_bu)
+    dt_tt     = _sum(get_metric(df,      STT_DT,     kpi_months, kpi_bu))
+    dt_kh     = _sum(get_metric_plan(df, STT_DT_KH,  kpi_months, kpi_bu))  # STT=5 có KH
+    ln_tt     = _sum(get_metric(df,      STT_LN_GOP, kpi_months, kpi_bu))
+    ln_kh     = _sum(get_metric_plan(df, STT_LN_GOP, kpi_months, kpi_bu))
+    hd_tt     = _sum(get_metric(df,      STT_LNHDKD, kpi_months, kpi_bu))
+    hd_kh     = _sum(get_metric_plan(df, STT_LNHDKD, kpi_months, kpi_bu))
+    st_tt     = _sum(get_metric(df,      STT_LNST,   kpi_months, kpi_bu))
+    st_kh     = _sum(get_metric_plan(df, STT_LNST,   kpi_months, kpi_bu))
 
     gm_pct  = ln_tt / dt_tt * 100 if dt_tt else 0.0
     npm_pct = st_tt / dt_tt * 100 if dt_tt else 0.0
 
-    # ── LẤY SỐ LIỆU: WATERFALL (theo link_wf — độc lập với KPI Cards) ──
+    # ── LẤY SỐ LIỆU: WATERFALL (theo link_wf / link_wf_bu — độc lập với KPI Cards) ──
     wf_months = get_months(link_wf)
-    dt_tt_wf     = _sum(get_metric(df,      STT_DT,     wf_months, sel_buses))
-    ln_tt_wf     = _sum(get_metric(df,      STT_LN_GOP, wf_months, sel_buses))
-    hd_tt_wf     = _sum(get_metric(df,      STT_LNHDKD, wf_months, sel_buses))
-    st_tt_wf     = _sum(get_metric(df,      STT_LNST,   wf_months, sel_buses))
-    gvhb_tt_wf   = _sum(get_metric(df,      STT_GVHB,   wf_months, sel_buses))
-    cpqldn_tt_wf = _sum(get_metric(df,      STT_CPQLDN, wf_months, sel_buses))
+    wf_bu     = get_bu(link_wf_bu)
+    dt_tt_wf     = _sum(get_metric(df,      STT_DT,     wf_months, wf_bu))
+    ln_tt_wf     = _sum(get_metric(df,      STT_LN_GOP, wf_months, wf_bu))
+    hd_tt_wf     = _sum(get_metric(df,      STT_LNHDKD, wf_months, wf_bu))
+    st_tt_wf     = _sum(get_metric(df,      STT_LNST,   wf_months, wf_bu))
+    gvhb_tt_wf   = _sum(get_metric(df,      STT_GVHB,   wf_months, wf_bu))
+    cpqldn_tt_wf = _sum(get_metric(df,      STT_CPQLDN, wf_months, wf_bu))
 
     # ── KPI CARDS ────────────────────────────────────────────
     def _delta_text(tt: float, kh: float) -> str:
