@@ -22,6 +22,12 @@ def _sum(d: dict) -> float:
     return sum(d.values()) if d else 0.0
 
 
+def link_badge(linked: bool) -> str:
+    if linked:
+        return "🔗 *Theo bộ lọc tháng*"
+    return "📌 *Toàn bộ thời gian*"
+
+
 def render(df: pd.DataFrame):
     all_months = sorted(df[FG_DATETIME].dropna().unique().tolist())
     all_bus    = sorted(df[FG_BU].dropna().unique().tolist())
@@ -47,6 +53,14 @@ def render(df: pd.DataFrame):
             key="p0_months",
         )
         sel_months = [month_map[l] for l in sel_labels]
+
+        with st.expander("🔗 Liên kết bộ lọc tháng", expanded=False):
+            st.caption("Chọn biểu đồ bị ảnh hưởng khi đổi tháng:")
+            link_kpi     = st.checkbox("KPI Cards",        value=True,  key="link_kpi")
+            link_wf      = st.checkbox("P&L Waterfall",    value=True,  key="link_wf")
+            link_donut   = st.checkbox("Cơ cấu Doanh thu", value=False, key="link_donut")
+            link_bar_pnl = st.checkbox("P&L theo BU",      value=False, key="link_bar")
+
         sel_buses = st.multiselect(
             "Chọn đơn vị",
             options=all_bus,
@@ -57,6 +71,12 @@ def render(df: pd.DataFrame):
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")
         return
+
+    # Tất cả tháng có data (không lọc) — dùng cho biểu đồ KHÔNG liên kết bộ lọc tháng
+    all_active_months = [month_map[l] for l in all_labels]
+
+    def get_months(linked: bool) -> list:
+        return sel_months if linked else all_active_months
 
     # ── BADGE PERIOD ─────────────────────────────────────────
     first = month_display_label(sorted(sel_months)[0])
@@ -70,20 +90,28 @@ def render(df: pd.DataFrame):
         unsafe_allow_html=True,
     )
 
-    # ── LẤY SỐ LIỆU ──────────────────────────────────────────
-    dt_tt     = _sum(get_metric(df,      STT_DT,     sel_months, sel_buses))
-    dt_kh     = _sum(get_metric_plan(df, STT_DT_KH,  sel_months, sel_buses))  # STT=5 có KH
-    ln_tt     = _sum(get_metric(df,      STT_LN_GOP, sel_months, sel_buses))
-    ln_kh     = _sum(get_metric_plan(df, STT_LN_GOP, sel_months, sel_buses))
-    hd_tt     = _sum(get_metric(df,      STT_LNHDKD, sel_months, sel_buses))
-    hd_kh     = _sum(get_metric_plan(df, STT_LNHDKD, sel_months, sel_buses))
-    st_tt     = _sum(get_metric(df,      STT_LNST,   sel_months, sel_buses))
-    st_kh     = _sum(get_metric_plan(df, STT_LNST,   sel_months, sel_buses))
-    gvhb_tt   = _sum(get_metric(df,      STT_GVHB,   sel_months, sel_buses))
-    cpqldn_tt = _sum(get_metric(df,      STT_CPQLDN, sel_months, sel_buses))
+    # ── LẤY SỐ LIỆU: KPI CARDS (theo link_kpi) ───────────────
+    kpi_months = get_months(link_kpi)
+    dt_tt     = _sum(get_metric(df,      STT_DT,     kpi_months, sel_buses))
+    dt_kh     = _sum(get_metric_plan(df, STT_DT_KH,  kpi_months, sel_buses))  # STT=5 có KH
+    ln_tt     = _sum(get_metric(df,      STT_LN_GOP, kpi_months, sel_buses))
+    ln_kh     = _sum(get_metric_plan(df, STT_LN_GOP, kpi_months, sel_buses))
+    hd_tt     = _sum(get_metric(df,      STT_LNHDKD, kpi_months, sel_buses))
+    hd_kh     = _sum(get_metric_plan(df, STT_LNHDKD, kpi_months, sel_buses))
+    st_tt     = _sum(get_metric(df,      STT_LNST,   kpi_months, sel_buses))
+    st_kh     = _sum(get_metric_plan(df, STT_LNST,   kpi_months, sel_buses))
 
     gm_pct  = ln_tt / dt_tt * 100 if dt_tt else 0.0
     npm_pct = st_tt / dt_tt * 100 if dt_tt else 0.0
+
+    # ── LẤY SỐ LIỆU: WATERFALL (theo link_wf — độc lập với KPI Cards) ──
+    wf_months = get_months(link_wf)
+    dt_tt_wf     = _sum(get_metric(df,      STT_DT,     wf_months, sel_buses))
+    ln_tt_wf     = _sum(get_metric(df,      STT_LN_GOP, wf_months, sel_buses))
+    hd_tt_wf     = _sum(get_metric(df,      STT_LNHDKD, wf_months, sel_buses))
+    st_tt_wf     = _sum(get_metric(df,      STT_LNST,   wf_months, sel_buses))
+    gvhb_tt_wf   = _sum(get_metric(df,      STT_GVHB,   wf_months, sel_buses))
+    cpqldn_tt_wf = _sum(get_metric(df,      STT_CPQLDN, wf_months, sel_buses))
 
     # ── KPI CARDS ────────────────────────────────────────────
     def _delta_text(tt: float, kh: float) -> str:
@@ -101,6 +129,7 @@ def render(df: pd.DataFrame):
     delta_hd  = _delta_text(hd_tt, hd_kh)
     delta_st  = _delta_text(st_tt, st_kh)
 
+    st.caption(link_badge(link_kpi))
     cols = st.columns(4)
     card_data = [
         ("🔥 Doanh thu",   fmt_dt,  delta_dt,  ""),
@@ -153,7 +182,8 @@ def render(df: pd.DataFrame):
     col_wf, col_pie = st.columns(2)
 
     with col_wf:
-        taxes_etc = (st_tt - hd_tt) / 1e9     # LNST - LNHĐKD (thường âm)
+        st.caption(link_badge(link_wf))
+        taxes_etc = (st_tt_wf - hd_tt_wf) / 1e9     # LNST - LNHĐKD (thường âm)
 
         fig_wf = go.Figure(go.Waterfall(
             orientation="v",
@@ -161,12 +191,12 @@ def render(df: pd.DataFrame):
                      "relative", "total", "relative", "total"],
             x=["Doanh thu", "(−) Giá vốn", "LN Gộp",
                "(−) CP QLDN", "LNHĐKD", "Thuế & khác", "LNST"],
-            y=[dt_tt/1e9, -gvhb_tt/1e9, None,
-               -cpqldn_tt/1e9, None, taxes_etc, None],
+            y=[dt_tt_wf/1e9, -gvhb_tt_wf/1e9, None,
+               -cpqldn_tt_wf/1e9, None, taxes_etc, None],
             text=[
-                fmt_ty(dt_tt), fmt_ty(gvhb_tt), fmt_ty(ln_tt),
-                fmt_ty(cpqldn_tt), fmt_ty(hd_tt),
-                fmt_ty(abs(taxes_etc * 1e9)), fmt_ty(st_tt),
+                fmt_ty(dt_tt_wf), fmt_ty(gvhb_tt_wf), fmt_ty(ln_tt_wf),
+                fmt_ty(cpqldn_tt_wf), fmt_ty(hd_tt_wf),
+                fmt_ty(abs(taxes_etc * 1e9)), fmt_ty(st_tt_wf),
             ],
             textposition="outside",
             increasing=dict(marker_color="#22c55e"),
@@ -185,8 +215,9 @@ def render(df: pd.DataFrame):
         st.plotly_chart(fig_wf, use_container_width=True, config=MODEBAR_CONFIG)
 
     with col_pie:
+        st.caption(link_badge(link_donut))
         # Donut luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị"
-        dt_by_bu  = get_metric_by_bu(df, STT_DT, sel_months, all_bus)
+        dt_by_bu  = get_metric_by_bu(df, STT_DT, get_months(link_donut), all_bus)
         dt_labels = [bu for bu, v in dt_by_bu.items() if v > 0]
         dt_vals   = [v  for v  in dt_by_bu.values() if v > 0]
 
@@ -223,7 +254,8 @@ def render(df: pd.DataFrame):
 
     # ── BAR NGANG — LN Sau Thuế theo đơn vị ─────────────────
     # Bar chart luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị"
-    lnst_by_bu_all = get_metric_by_bu(df, STT_LNST, sel_months, all_bus)
+    st.caption(link_badge(link_bar_pnl))
+    lnst_by_bu_all = get_metric_by_bu(df, STT_LNST, get_months(link_bar_pnl), all_bus)
     if lnst_by_bu_all:
         # Sort ascending: -7.41 đầu (dưới cùng), 13.85 cuối (trên cùng)
         raw_vals   = [v / 1e9 for v in lnst_by_bu_all.values()]
