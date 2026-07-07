@@ -50,11 +50,13 @@ def render(df: pd.DataFrame):
         sel_months = [month_map[l] for l in sel_labels]
 
         with st.expander("🔗"):
+            # Line chart (xu hướng theo thời gian) → mặc định KHÔNG liên kết (default=False)
+            # Bar chart / KPI (tổng hợp) → mặc định CÓ liên kết (default=True)
             link_kpi_thang   = linked_checkbox("Chi phí QLDN (tổng quan)",   "link_p2_kpi_thang",   prefs)
-            link_cp_thang    = linked_checkbox("CP QLDN theo thời gian",     "link_p2_cp_thang",    prefs)
-            link_pctcp_thang = linked_checkbox("% CP QLDN / Doanh thu",      "link_p2_pctcp_thang", prefs)
+            link_cp_thang    = linked_checkbox("CP QLDN theo thời gian",     "link_p2_cp_thang",    prefs, default=False)
+            link_pctcp_thang = linked_checkbox("% CP QLDN / Doanh thu",      "link_p2_pctcp_thang", prefs, default=False)
             link_dept_thang  = linked_checkbox("CP theo bộ phận",            "link_p2_dept_thang",  prefs)
-            link_pctgt_thang = linked_checkbox("% CP gián tiếp / Doanh thu", "link_p2_pctgt_thang", prefs)
+            link_pctgt_thang = linked_checkbox("% CP gián tiếp / Doanh thu", "link_p2_pctgt_thang", prefs, default=False)
 
         st.markdown("**Đơn vị**")
         sel_buses = st.multiselect(
@@ -64,10 +66,10 @@ def render(df: pd.DataFrame):
 
         with st.expander("🔗"):
             link_kpi_bu   = linked_checkbox("Chi phí QLDN (tổng quan)",   "link_p2_kpi_bu",   prefs)
-            link_cp_bu    = linked_checkbox("CP QLDN theo thời gian",     "link_p2_cp_bu",    prefs)
-            link_pctcp_bu = linked_checkbox("% CP QLDN / Doanh thu",      "link_p2_pctcp_bu", prefs)
+            link_cp_bu    = linked_checkbox("CP QLDN theo thời gian",     "link_p2_cp_bu",    prefs, default=False)
+            link_pctcp_bu = linked_checkbox("% CP QLDN / Doanh thu",      "link_p2_pctcp_bu", prefs, default=False)
             link_dept_bu  = linked_checkbox("CP theo bộ phận",            "link_p2_dept_bu",  prefs)
-            link_pctgt_bu = linked_checkbox("% CP gián tiếp / Doanh thu", "link_p2_pctgt_bu", prefs)
+            link_pctgt_bu = linked_checkbox("% CP gián tiếp / Doanh thu", "link_p2_pctgt_bu", prefs, default=False)
 
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")

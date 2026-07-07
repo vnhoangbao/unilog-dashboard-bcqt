@@ -49,13 +49,15 @@ def render(df: pd.DataFrame):
         sel_months = [month_map[l] for l in sel_labels]
 
         with st.expander("🔗"):
+            # Line chart (xu hướng theo thời gian) → mặc định KHÔNG liên kết (default=False)
+            # Bar chart / KPI (tổng hợp) → mặc định CÓ liên kết (default=True)
             link_kpi_thang     = linked_checkbox("KPI Cards",   "link_p1_kpi_thang",     prefs)
-            link_dt_thang      = linked_checkbox("Doanh thu",   "link_p1_dt_thang",      prefs)
-            link_gop_thang     = linked_checkbox("LN Gộp",      "link_p1_gop_thang",     prefs)
-            link_hd_thang      = linked_checkbox("LN HĐKD",     "link_p1_hd_thang",      prefs)
+            link_dt_thang      = linked_checkbox("Doanh thu",   "link_p1_dt_thang",      prefs, default=False)
+            link_gop_thang     = linked_checkbox("LN Gộp",      "link_p1_gop_thang",     prefs, default=False)
+            link_hd_thang      = linked_checkbox("LN HĐKD",     "link_p1_hd_thang",      prefs, default=False)
             link_gvhb_thang    = linked_checkbox("GVHB",        "link_p1_gvhb_thang",    prefs)
             link_pctgvhb_thang = linked_checkbox("% GVHB",      "link_p1_pctgvhb_thang", prefs)
-            link_lnst_thang    = linked_checkbox("LN Sau Thuế", "link_p1_lnst_thang",    prefs)
+            link_lnst_thang    = linked_checkbox("LN Sau Thuế", "link_p1_lnst_thang",    prefs, default=False)
 
         st.markdown("**Đơn vị**")
         sel_buses = st.multiselect(
@@ -65,12 +67,12 @@ def render(df: pd.DataFrame):
 
         with st.expander("🔗"):
             link_kpi_bu     = linked_checkbox("KPI Cards",   "link_p1_kpi_bu",     prefs)
-            link_dt_bu      = linked_checkbox("Doanh thu",   "link_p1_dt_bu",      prefs)
-            link_gop_bu     = linked_checkbox("LN Gộp",      "link_p1_gop_bu",     prefs)
-            link_hd_bu      = linked_checkbox("LN HĐKD",     "link_p1_hd_bu",      prefs)
+            link_dt_bu      = linked_checkbox("Doanh thu",   "link_p1_dt_bu",      prefs, default=False)
+            link_gop_bu     = linked_checkbox("LN Gộp",      "link_p1_gop_bu",     prefs, default=False)
+            link_hd_bu      = linked_checkbox("LN HĐKD",     "link_p1_hd_bu",      prefs, default=False)
             link_gvhb_bu    = linked_checkbox("GVHB",        "link_p1_gvhb_bu",    prefs)
             link_pctgvhb_bu = linked_checkbox("% GVHB",      "link_p1_pctgvhb_bu", prefs)
-            link_lnst_bu    = linked_checkbox("LN Sau Thuế", "link_p1_lnst_bu",    prefs)
+            link_lnst_bu    = linked_checkbox("LN Sau Thuế", "link_p1_lnst_bu",    prefs, default=False)
 
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")
