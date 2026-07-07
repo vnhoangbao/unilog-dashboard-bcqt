@@ -131,7 +131,7 @@ def render(df: pd.DataFrame):
         else:
             sel_dvt = []
 
-        links_p3 = render_link_controls(P3_CHARTS, "p3")
+        links_bp_p3 = render_link_controls(P3_CHARTS, "p3", "bp")
 
     # ── LỌC ─────────────────────────────────────────────────
     dff = df.copy()
@@ -144,7 +144,7 @@ def render(df: pd.DataFrame):
 
     def data_for(chart_name: str) -> pd.DataFrame:
         """Trả về df đã lọc (linked) hoặc df gốc không lọc (unlinked)."""
-        return dff if links_p3[chart_name] else df
+        return dff if links_bp_p3[chart_name] else df
 
     # ── TỔNG CÔNG NỢ ────────────────────────────────────────
     total_vnd = dff[dff[CN_DVT] == "VND"][CN_TIEN].sum() if has_dvt and "VND" in (sel_dvt or []) else dff[CN_TIEN].sum()
@@ -159,7 +159,7 @@ def render(df: pd.DataFrame):
 
     # ── BẢNG 1: THEO BỘ PHẬN ────────────────────────────────
     st.markdown("#### Bảng công nợ quá hạn theo bộ phận")
-    st.caption(link_badge(links_p3["Bảng theo bộ phận"]))
+    st.caption(link_badge(links_bp_p3["Bảng theo bộ phận"]))
     data_bp = data_for("Bảng theo bộ phận")
     grp_cols = [CN_BP]
     if has_dvt:
@@ -180,7 +180,7 @@ def render(df: pd.DataFrame):
     # ── BẢNG 2: THEO KHÁCH HÀNG ─────────────────────────────
     if has_khach:
         st.markdown("#### Bảng công nợ quá hạn theo khách hàng")
-        st.caption(link_badge(links_p3["Bảng theo khách hàng"]))
+        st.caption(link_badge(links_bp_p3["Bảng theo khách hàng"]))
         data_kh = data_for("Bảng theo khách hàng")
         grp_cols2 = [CN_KHACH]
         if has_dvt:

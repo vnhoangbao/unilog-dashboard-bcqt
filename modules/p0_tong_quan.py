@@ -15,7 +15,11 @@ from data_loader import get_metric, get_metric_by_bu, get_metric_plan
 from utils import (
     fmt_ty, CHART_LAYOUT, CHART_LAYOUT_NO_MARGIN, apply_chart_style,
     month_display_label, month_sort_key, MODEBAR_CONFIG, apply_responsive,
+    render_link_controls,
 )
+
+# Chart trong p0 có toggle liên kết (KPI Cards & Waterfall — theo cả tháng lẫn BU)
+P0_CHARTS = ["KPI Cards", "P&L Waterfall"]
 
 
 def _sum(d: dict) -> float:
@@ -54,16 +58,7 @@ def render(df: pd.DataFrame):
         )
         sel_months = [month_map[l] for l in sel_labels]
 
-        with st.expander("🔗 Liên kết bộ lọc tháng", expanded=False):
-            st.caption("Chọn biểu đồ bị ảnh hưởng khi đổi tháng:")
-            link_kpi     = st.checkbox("KPI Cards",        value=True,  key="link_kpi")
-            link_wf      = st.checkbox("P&L Waterfall",    value=True,  key="link_wf")
-            link_donut   = st.checkbox("Cơ cấu Doanh thu", value=False, key="link_donut")
-            link_bar_pnl = st.checkbox("P&L theo BU",      value=False, key="link_bar")
-
-            st.caption("Chọn biểu đồ bị ảnh hưởng khi đổi đơn vị (BU):")
-            link_kpi_bu = st.checkbox("KPI Cards (BU)",     value=True, key="link_p0_kpi_bu")
-            link_wf_bu  = st.checkbox("Waterfall (BU)",     value=True, key="link_p0_wf_bu")
+        links_thang_p0 = render_link_controls(P0_CHARTS, "p0", "thang")
 
         sel_buses = st.multiselect(
             "Chọn đơn vị",
@@ -71,6 +66,8 @@ def render(df: pd.DataFrame):
             default=all_bus,
             key="p0_bu",
         )
+
+        links_bu_p0 = render_link_controls(P0_CHARTS, "p0", "bu")
 
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")
@@ -97,9 +94,9 @@ def render(df: pd.DataFrame):
         unsafe_allow_html=True,
     )
 
-    # ── LẤY SỐ LIỆU: KPI CARDS (theo link_kpi / link_kpi_bu) ──
-    kpi_months = get_months(link_kpi)
-    kpi_bu     = get_bu(link_kpi_bu)
+    # ── LẤY SỐ LIỆU: KPI CARDS (theo link riêng tháng & BU) ──
+    kpi_months = get_months(links_thang_p0["KPI Cards"])
+    kpi_bu     = get_bu(links_bu_p0["KPI Cards"])
     dt_tt     = _sum(get_metric(df,      STT_DT,     kpi_months, kpi_bu))
     dt_kh     = _sum(get_metric_plan(df, STT_DT_KH,  kpi_months, kpi_bu))  # STT=5 có KH
     ln_tt     = _sum(get_metric(df,      STT_LN_GOP, kpi_months, kpi_bu))
@@ -112,9 +109,9 @@ def render(df: pd.DataFrame):
     gm_pct  = ln_tt / dt_tt * 100 if dt_tt else 0.0
     npm_pct = st_tt / dt_tt * 100 if dt_tt else 0.0
 
-    # ── LẤY SỐ LIỆU: WATERFALL (theo link_wf / link_wf_bu — độc lập với KPI Cards) ──
-    wf_months = get_months(link_wf)
-    wf_bu     = get_bu(link_wf_bu)
+    # ── LẤY SỐ LIỆU: WATERFALL (theo link riêng tháng & BU — độc lập với KPI Cards) ──
+    wf_months = get_months(links_thang_p0["P&L Waterfall"])
+    wf_bu     = get_bu(links_bu_p0["P&L Waterfall"])
     dt_tt_wf     = _sum(get_metric(df,      STT_DT,     wf_months, wf_bu))
     ln_tt_wf     = _sum(get_metric(df,      STT_LN_GOP, wf_months, wf_bu))
     hd_tt_wf     = _sum(get_metric(df,      STT_LNHDKD, wf_months, wf_bu))
@@ -138,7 +135,7 @@ def render(df: pd.DataFrame):
     delta_hd  = _delta_text(hd_tt, hd_kh)
     delta_st  = _delta_text(st_tt, st_kh)
 
-    st.caption(link_badge(link_kpi))
+    st.caption(link_badge(links_thang_p0["KPI Cards"]))
     cols = st.columns(4)
     card_data = [
         ("🔥 Doanh thu",   fmt_dt,  delta_dt,  ""),
@@ -191,7 +188,7 @@ def render(df: pd.DataFrame):
     col_wf, col_pie = st.columns(2)
 
     with col_wf:
-        st.caption(link_badge(link_wf))
+        st.caption(link_badge(links_thang_p0["P&L Waterfall"]))
         taxes_etc = (st_tt_wf - hd_tt_wf) / 1e9     # LNST - LNHĐKD (thường âm)
 
         fig_wf = go.Figure(go.Waterfall(
@@ -224,9 +221,9 @@ def render(df: pd.DataFrame):
         st.plotly_chart(fig_wf, use_container_width=True, config=MODEBAR_CONFIG)
 
     with col_pie:
-        st.caption(link_badge(link_donut))
-        # Donut luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị"
-        dt_by_bu  = get_metric_by_bu(df, STT_DT, get_months(link_donut), all_bus)
+        # Donut luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị";
+        # theo tháng đã chọn (không có toggle link riêng cho chart này)
+        dt_by_bu  = get_metric_by_bu(df, STT_DT, sel_months, all_bus)
         dt_labels = [bu for bu, v in dt_by_bu.items() if v > 0]
         dt_vals   = [v  for v  in dt_by_bu.values() if v > 0]
 
@@ -262,9 +259,9 @@ def render(df: pd.DataFrame):
             st.info("Không có dữ liệu doanh thu.")
 
     # ── BAR NGANG — LN Sau Thuế theo đơn vị ─────────────────
-    # Bar chart luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị"
-    st.caption(link_badge(link_bar_pnl))
-    lnst_by_bu_all = get_metric_by_bu(df, STT_LNST, get_months(link_bar_pnl), all_bus)
+    # Bar chart luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị";
+    # theo tháng đã chọn (không có toggle link riêng cho chart này)
+    lnst_by_bu_all = get_metric_by_bu(df, STT_LNST, sel_months, all_bus)
     if lnst_by_bu_all:
         # Sort ascending: -7.41 đầu (dưới cùng), 13.85 cuối (trên cùng)
         raw_vals   = [v / 1e9 for v in lnst_by_bu_all.values()]
