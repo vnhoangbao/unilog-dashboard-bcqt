@@ -110,6 +110,13 @@ st.markdown("""
       border-radius: 8px;
   }
 
+  /* ── EXPANDER 🔗 TRONG SIDEBAR — nền tối riêng, không dùng nền trắng ở trên ── */
+  /* (nếu không có rule này, chữ trắng sẽ nằm trên nền trắng và biến mất) */
+  section[data-testid="stSidebar"] [data-testid="stExpander"] {
+      background: #1e3a5f !important;
+      border: 1px solid #2d4a7a !important;
+  }
+
   /* Force sidebar white text - nuclear option */
   section[data-testid="stSidebar"] .stCheckbox label p { color: white !important; }
   section[data-testid="stSidebar"] .stCheckbox span[data-baseweb] { color: white !important; }
