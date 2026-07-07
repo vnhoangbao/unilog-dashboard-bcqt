@@ -128,6 +128,7 @@ def render(df: pd.DataFrame):
         else:
             sel_dvt = []
 
+        st.markdown("**Liên kết (Bộ phận + Số ngày + ĐVT)**")
         with st.expander("🔗"):
             link_tong_bp = linked_checkbox("Tổng công nợ quá hạn",     "link_p3_tong_bp", prefs)
             link_bp_bp   = linked_checkbox("Bảng theo bộ phận",        "link_p3_bp_bp",   prefs)

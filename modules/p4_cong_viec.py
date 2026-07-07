@@ -132,10 +132,6 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
         else:
             sel_thang = []
 
-        with st.expander("🔗"):
-            link_mt_thang = linked_checkbox("Bảng mục tiêu", "link_p4_mt_thang", prefs)
-            link_ct_thang = linked_checkbox("Bảng chi tiết",  "link_p4_ct_thang", prefs)
-
         all_months_detail = sorted(df_detail[DT_THANG].dropna().unique().tolist()) if ok_detail else []
 
         def _fmt(v): return f"Tháng {int(str(v)[5:7])}" if str(v)[4]=='-' else str(v)
@@ -144,6 +140,13 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
         sel_dt_thang_labels = st.multiselect("Tháng (chi tiết)", list(_map.keys()),
                                              default=list(_map.keys()), key="p4_dt_thang")
         sel_dt_thang = [_map[x] for x in sel_dt_thang_labels]
+
+        # Đặt ngay sau "Tháng (chi tiết)" — vì sheet target hiện KHÔNG có cột
+        # "Tháng" thực tế (has_thang=False), nên bộ lọc tháng thật sự đang hoạt
+        # động trên trang này chính là "Tháng (chi tiết)", không phải "Tháng"
+        with st.expander("🔗"):
+            link_mt_thang = linked_checkbox("Bảng mục tiêu", "link_p4_mt_thang", prefs)
+            link_ct_thang = linked_checkbox("Bảng chi tiết",  "link_p4_ct_thang", prefs)
 
     # ── LỌC TARGET ──────────────────────────────────────────
     def build_target(link_phong: bool, link_thang: bool) -> pd.DataFrame:

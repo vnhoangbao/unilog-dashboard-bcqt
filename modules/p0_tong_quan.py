@@ -76,8 +76,10 @@ def render(df: pd.DataFrame):
         )
 
         with st.expander("🔗"):
-            link_kpi_bu = linked_checkbox("KPI Cards",     "link_p0_kpi_bu", prefs)
-            link_wf_bu  = linked_checkbox("P&L Waterfall", "link_p0_wf_bu",  prefs)
+            link_kpi_bu   = linked_checkbox("KPI Cards",        "link_p0_kpi_bu",   prefs)
+            link_wf_bu    = linked_checkbox("P&L Waterfall",    "link_p0_wf_bu",    prefs)
+            link_donut_bu = linked_checkbox("Cơ cấu Doanh thu", "link_p0_donut_bu", prefs, default=False)
+            link_bar_bu   = linked_checkbox("P&L theo BU",      "link_p0_bar_bu",   prefs, default=False)
 
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")
@@ -232,9 +234,7 @@ def render(df: pd.DataFrame):
 
     with col_pie:
         st.caption(link_badge(link_donut_thang))
-        # Donut luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị"
-        # (biểu đồ vốn để xem cơ cấu theo TẤT CẢ đơn vị — lọc BU sẽ làm mất ý nghĩa)
-        dt_by_bu  = get_metric_by_bu(df, STT_DT, get_months(link_donut_thang), all_bus)
+        dt_by_bu  = get_metric_by_bu(df, STT_DT, get_months(link_donut_thang), get_bu(link_donut_bu))
         dt_labels = [bu for bu, v in dt_by_bu.items() if v > 0]
         dt_vals   = [v  for v  in dt_by_bu.values() if v > 0]
 
@@ -271,9 +271,7 @@ def render(df: pd.DataFrame):
 
     # ── BAR NGANG — LN Sau Thuế theo đơn vị ─────────────────
     st.caption(link_badge(link_bar_thang))
-    # Bar chart luôn dùng toàn bộ BU, không phụ thuộc bộ lọc "Chọn đơn vị"
-    # (biểu đồ vốn để xem breakdown theo TẤT CẢ đơn vị — lọc BU sẽ làm mất ý nghĩa)
-    lnst_by_bu_all = get_metric_by_bu(df, STT_LNST, get_months(link_bar_thang), all_bus)
+    lnst_by_bu_all = get_metric_by_bu(df, STT_LNST, get_months(link_bar_thang), get_bu(link_bar_bu))
     if lnst_by_bu_all:
         # Sort ascending: -7.41 đầu (dưới cùng), 13.85 cuối (trên cùng)
         raw_vals   = [v / 1e9 for v in lnst_by_bu_all.values()]
