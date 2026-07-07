@@ -13,6 +13,13 @@ from config import (
     TRANG_THAI_COLORS, TRANG_THAI_DEFAULT, COMPLETION_THRESHOLDS,
 )
 from data_loader import check_columns
+from utils import render_link_controls, link_badge
+
+# Tên bảng trong p4 — unlinked = bỏ qua bộ lọc (Phòng/Phân loại/Tháng), hiện dữ liệu gốc
+P4_CHARTS = [
+    "Bảng mục tiêu theo Owner",
+    "Bảng chi tiết công việc",
+]
 
 REQUIRED_TARGET = [TG_CONGVIEC]
 REQUIRED_DETAIL = [DT_THANG, DT_TRANGTHAI]
@@ -133,6 +140,8 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
                                              default=list(_map.keys()), key="p4_dt_thang")
         sel_dt_thang = [_map[x] for x in sel_dt_thang_labels]
 
+        links_p4 = render_link_controls(P4_CHARTS, "p4")
+
     # ── LỌC TARGET ──────────────────────────────────────────
     if ok_target:
         dft = df_target.copy()
@@ -143,15 +152,18 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
         if sel_thang and has_thang:
             dft = dft[dft[TG_THANG].isin(sel_thang)]
 
+        dft_for_table = dft if links_p4["Bảng mục tiêu theo Owner"] else df_target.copy()
+
         st.markdown("#### Mục tiêu, nhiệm vụ và mô tả công việc theo Owner")
+        st.caption(link_badge(links_p4["Bảng mục tiêu theo Owner"]))
 
         cols_show = []
-        if TG_CONGVIEC in dft.columns: cols_show.append(TG_CONGVIEC)
-        if TG_OWNER    in dft.columns: cols_show.append(TG_OWNER)
-        if TG_DVL      in dft.columns: cols_show.append(TG_DVL)
-        if has_mdth:                    cols_show.append(TG_MDTH)
+        if TG_CONGVIEC in dft_for_table.columns: cols_show.append(TG_CONGVIEC)
+        if TG_OWNER    in dft_for_table.columns: cols_show.append(TG_OWNER)
+        if TG_DVL      in dft_for_table.columns: cols_show.append(TG_DVL)
+        if has_mdth:                              cols_show.append(TG_MDTH)
 
-        dft_disp = dft[cols_show].copy() if cols_show else dft.copy()
+        dft_disp = dft_for_table[cols_show].copy() if cols_show else dft_for_table.copy()
 
         rename_t = {
             TG_CONGVIEC: "Tên công việc",
@@ -189,14 +201,17 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
             target_ids_phong = df_target.loc[df_target[TG_PHONG].isin(sel_phong), TG_ID]
             dfd = dfd[dfd[DT_TARGET_ID].isin(target_ids_phong)]
 
+        dfd_for_table = dfd if links_p4["Bảng chi tiết công việc"] else df_detail.copy()
+
         st.markdown("#### Chi tiết mục tiêu và công việc đã thực hiện theo tháng")
+        st.caption(link_badge(links_p4["Bảng chi tiết công việc"]))
 
         cols_detail = []
         for c in [DT_CONGVIEC, DT_CHITIET, DT_THANG, DT_TRANGTHAI, DT_KETQUA, DT_TIEPTHEO]:
-            if c in dfd.columns:
+            if c in dfd_for_table.columns:
                 cols_detail.append(c)
 
-        dfd_disp = dfd[cols_detail].copy() if cols_detail else dfd.copy()
+        dfd_disp = dfd_for_table[cols_detail].copy() if cols_detail else dfd_for_table.copy()
         rename_d = {
             DT_CONGVIEC:  "Tên công việc",
             DT_CHITIET:   "Chi tiết công việc con",

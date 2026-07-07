@@ -3,8 +3,33 @@
 # =============================================================
 
 import pandas as pd
+import streamlit as st
 import plotly.graph_objects as go
 from config import COLOR_ACTUAL, COLOR_PLAN, COLOR_DANGER, COLOR_WARNING, COLOR_OK
+
+
+# ─── LIÊN KẾT BỘ LỌC (slicer link) ──────────────────────────
+
+def render_link_controls(chart_names: list, page_key: str) -> dict:
+    """
+    Render expander "Liên kết bộ lọc" trong sidebar.
+    Gọi hàm này BÊN TRONG `with st.sidebar:`, ngay sau các multiselect của trang.
+    chart_names: danh sách tên chart muốn kiểm soát
+    page_key: prefix key duy nhất cho từng trang (vd "p1", "p2")
+    Trả về dict {chart_name: True/False}
+    """
+    links = {}
+    with st.expander("🔗 Liên kết bộ lọc", expanded=False):
+        st.caption("Tick = bộ lọc ảnh hưởng chart này:")
+        for name in chart_names:
+            key = f"link_{page_key}_{name.replace(' ', '_')}"
+            links[name] = st.checkbox(name, value=True, key=key)
+    return links
+
+
+def link_badge(linked: bool) -> str:
+    """Badge nhỏ hiện trạng thái link bên trên chart."""
+    return "🔗 *Theo bộ lọc*" if linked else "📌 *Toàn bộ dữ liệu*"
 
 
 # ─── MONTH LABELS ───────────────────────────────────────────
