@@ -25,17 +25,11 @@ st.markdown("""
   [data-testid="stSidebar"] {
       background-color: #0f1c35 !important;
   }
-  [data-testid="stSidebar"] * {
-      color: #f1f5f9 !important;
+  section[data-testid="stSidebar"] {
+      color: #ffffff !important;
   }
-  [data-testid="stSidebar"] .stCheckbox label {
-      color: #f1f5f9 !important;
-  }
-  [data-testid="stSidebar"] p,
-  [data-testid="stSidebar"] span,
-  [data-testid="stSidebar"] div,
-  [data-testid="stSidebar"] label {
-      color: #f1f5f9 !important;
+  section[data-testid="stSidebar"] * {
+      color: #ffffff !important;
   }
 
   /* ── NỘI DUNG CHÍNH — NỀN SÁNG ── */

@@ -17,14 +17,8 @@ from utils import (
     fmt_ty, fmt_pct, CHART_LAYOUT, apply_chart_style,
     month_display_label, month_sort_key, smart_textpos,
     fix_chart_yrange_and_labels, MODEBAR_CONFIG, apply_responsive,
-    render_link_controls, link_badge,
+    link_badge,
 )
-
-# Tên chart trong p1 — khớp thứ tự các section A, B, B2, C, C2, D bên dưới
-P1_CHARTS = [
-    "Doanh thu", "LN Gộp", "LN HĐKD",
-    "GVHB", "% GVHB", "LN Sau Thuế",
-]
 
 
 def render(df: pd.DataFrame):
@@ -43,19 +37,35 @@ def render(df: pd.DataFrame):
     # ── SIDEBAR ──────────────────────────────────────────────
     with st.sidebar:
         st.markdown("### Bộ lọc — Trang 1")
+
+        st.markdown("**Tháng**")
         sel_labels = st.multiselect(
             "Tháng", all_labels, default=active_labels, key="p1_months",
+            label_visibility="collapsed",
         )
         sel_months = [month_map[l] for l in sel_labels]
 
-        links_thang_p1 = render_link_controls(P1_CHARTS, "p1", "thang")
+        with st.expander("🔗"):
+            link_dt_thang      = st.checkbox("Doanh thu",   value=True, key="link_p1_dt_thang")
+            link_gop_thang     = st.checkbox("LN Gộp",      value=True, key="link_p1_gop_thang")
+            link_hd_thang      = st.checkbox("LN HĐKD",     value=True, key="link_p1_hd_thang")
+            link_gvhb_thang    = st.checkbox("GVHB",        value=True, key="link_p1_gvhb_thang")
+            link_pctgvhb_thang = st.checkbox("% GVHB",      value=True, key="link_p1_pctgvhb_thang")
+            link_lnst_thang    = st.checkbox("LN Sau Thuế", value=True, key="link_p1_lnst_thang")
 
+        st.markdown("**Đơn vị**")
         sel_buses = st.multiselect(
             "Đơn vị kinh doanh", options=all_bus, default=all_bus,
-            key="p1_bu",
+            key="p1_bu", label_visibility="collapsed",
         )
 
-        links_bu_p1 = render_link_controls(P1_CHARTS, "p1", "bu")
+        with st.expander("🔗"):
+            link_dt_bu      = st.checkbox("Doanh thu",   value=True, key="link_p1_dt_bu")
+            link_gop_bu     = st.checkbox("LN Gộp",      value=True, key="link_p1_gop_bu")
+            link_hd_bu      = st.checkbox("LN HĐKD",     value=True, key="link_p1_hd_bu")
+            link_gvhb_bu    = st.checkbox("GVHB",        value=True, key="link_p1_gvhb_bu")
+            link_pctgvhb_bu = st.checkbox("% GVHB",      value=True, key="link_p1_pctgvhb_bu")
+            link_lnst_bu    = st.checkbox("LN Sau Thuế", value=True, key="link_p1_lnst_bu")
 
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")
@@ -64,13 +74,11 @@ def render(df: pd.DataFrame):
     # Toàn bộ tháng có data — dùng cho chart KHÔNG liên kết bộ lọc tháng
     all_data_months = active_months
 
-    def months_for(chart_name: str) -> list:
-        """Tháng dùng cho 1 chart, tùy theo trạng thái link tháng của chart đó."""
-        return sorted(sel_months if links_thang_p1[chart_name] else all_data_months)
+    def get_months(linked: bool) -> list:
+        return sorted(sel_months if linked else all_data_months)
 
-    def bu_for(chart_name: str) -> list:
-        """Đơn vị dùng cho 1 chart, tùy theo trạng thái link BU của chart đó."""
-        return sel_buses if links_bu_p1[chart_name] else all_bus
+    def get_bu(linked: bool) -> list:
+        return sel_buses if linked else all_bus
 
     def series(stt, months, bu, plan=False):
         fn = get_metric_plan if plan else get_metric
@@ -167,32 +175,32 @@ def render(df: pd.DataFrame):
         return fig
 
     # ── A. Doanh thu TT vs KH ─────────────────────────────────
-    m_dt  = months_for("Doanh thu")
-    bu_dt = bu_for("Doanh thu")
+    m_dt  = get_months(link_dt_thang)
+    bu_dt = get_bu(link_dt_bu)
     x_dt = [month_display_label(m) for m in m_dt]
     dt_vals    = series(STT_DT,    m_dt, bu_dt)
     dt_kh_vals = series(STT_DT_KH, m_dt, bu_dt, plan=True)
 
-    st.caption(link_badge(links_thang_p1["Doanh thu"]))
+    st.caption(link_badge(link_dt_thang))
     fig_dt = line_tt_kh(dt_vals, dt_kh_vals, "Doanh thu bán hàng theo thời gian", x_dt)
     fig_dt = apply_responsive(fig_dt)
     st.plotly_chart(fig_dt, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── B. LN Gộp — 1 hàng ───────────────────────────────────
-    m_gop  = months_for("LN Gộp")
-    bu_gop = bu_for("LN Gộp")
+    m_gop  = get_months(link_gop_thang)
+    bu_gop = get_bu(link_gop_bu)
     x_gop = [month_display_label(m) for m in m_gop]
     ln_gop_vals = series(STT_LN_GOP, m_gop, bu_gop)
     ln_gop_kh   = series(STT_LN_GOP, m_gop, bu_gop, plan=True)
 
-    st.caption(link_badge(links_thang_p1["LN Gộp"]))
+    st.caption(link_badge(link_gop_thang))
     fig_ln_gop = line_tt_kh(ln_gop_vals, ln_gop_kh, "Lợi nhuận gộp", x_gop, color=COLOR_OK, height=300)
     fig_ln_gop = apply_responsive(fig_ln_gop)
     st.plotly_chart(fig_ln_gop, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── B2. LN HĐKD — 1 hàng ─────────────────────────────────
-    m_hd  = months_for("LN HĐKD")
-    bu_hd = bu_for("LN HĐKD")
+    m_hd  = get_months(link_hd_thang)
+    bu_hd = get_bu(link_hd_bu)
     x_hd = [month_display_label(m) for m in m_hd]
     lnhdkd_vals = series(STT_LNHDKD, m_hd, bu_hd)
     # LNHDKD KH = LN Gộp KH − CPQL KH (derived, vì STT 146 không có KH)
@@ -200,7 +208,7 @@ def render(df: pd.DataFrame):
     cpql_kh_hd_d = get_metric_multi(df, STT_CPQL_LIST, m_hd, bu_hd, plan=True)
     lnhdkd_kh    = [gp_kh_hd_d.get(m, 0) - cpql_kh_hd_d.get(m, 0) for m in m_hd]
 
-    st.caption(link_badge(links_thang_p1["LN HĐKD"]))
+    st.caption(link_badge(link_hd_thang))
     fig_lnhdkd = line_tt_kh(
         lnhdkd_vals, lnhdkd_kh,
         "LN Hoạt động kinh doanh (KH = LN Gộp KH − CPQL KH)",
@@ -210,20 +218,20 @@ def render(df: pd.DataFrame):
     st.plotly_chart(fig_lnhdkd, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── C. GVHB TT vs KH (bar) ───────────────────────────────
-    m_gvhb  = months_for("GVHB")
-    bu_gvhb = bu_for("GVHB")
+    m_gvhb  = get_months(link_gvhb_thang)
+    bu_gvhb = get_bu(link_gvhb_bu)
     x_gvhb = [month_display_label(m) for m in m_gvhb]
     gvhb_vals = series(STT_GVHB, m_gvhb, bu_gvhb)
     gvhb_kh   = series(STT_GVHB, m_gvhb, bu_gvhb, plan=True)
 
-    st.caption(link_badge(links_thang_p1["GVHB"]))
+    st.caption(link_badge(link_gvhb_thang))
     fig_gvhb = bar_tt_kh(gvhb_vals, gvhb_kh, "Giá vốn hàng bán (GVHB) theo thời gian", x_gvhb)
     fig_gvhb = apply_responsive(fig_gvhb)
     st.plotly_chart(fig_gvhb, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── C2. % GVHB — chỉ show tháng có data (Cách A) ─────────
-    m_pct  = months_for("% GVHB")
-    bu_pct = bu_for("% GVHB")
+    m_pct  = get_months(link_pctgvhb_thang)
+    bu_pct = get_bu(link_pctgvhb_bu)
     x_pct = [month_display_label(m) for m in m_pct]
     dt_vals_pct    = series(STT_DT,    m_pct, bu_pct)
     dt_kh_vals_pct = series(STT_DT_KH, m_pct, bu_pct, plan=True)
@@ -274,17 +282,17 @@ def render(df: pd.DataFrame):
     pct_y_max = max((v for v in all_pct_vals if v > 0), default=100)
     fig_gvhb_pct.update_yaxes(range=[0, pct_y_max * 1.18])
     fig_gvhb_pct = apply_responsive(fig_gvhb_pct)
-    st.caption(link_badge(links_thang_p1["% GVHB"]))
+    st.caption(link_badge(link_pctgvhb_thang))
     st.plotly_chart(fig_gvhb_pct, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── D. LN Sau Thuế ───────────────────────────────────────
-    m_lnst  = months_for("LN Sau Thuế")
-    bu_lnst = bu_for("LN Sau Thuế")
+    m_lnst  = get_months(link_lnst_thang)
+    bu_lnst = get_bu(link_lnst_bu)
     x_lnst = [month_display_label(m) for m in m_lnst]
     lnst_vals = series(STT_LNST, m_lnst, bu_lnst)
     lnst_kh   = series(STT_LNST, m_lnst, bu_lnst, plan=True)
 
-    st.caption(link_badge(links_thang_p1["LN Sau Thuế"]))
+    st.caption(link_badge(link_lnst_thang))
     fig_lnst = line_tt_kh(lnst_vals, lnst_kh, "LN Sau Thuế", x_lnst, color=COLOR_INFO)
     fig_lnst = apply_responsive(fig_lnst)
     st.plotly_chart(fig_lnst, use_container_width=True, config=MODEBAR_CONFIG)

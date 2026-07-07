@@ -18,16 +18,8 @@ from utils import (
     fmt_ty, CHART_LAYOUT, apply_chart_style,
     month_display_label, month_sort_key, smart_textpos,
     fix_chart_yrange_and_labels, MODEBAR_CONFIG, apply_responsive,
-    render_link_controls, link_badge,
+    link_badge,
 )
-
-# Tên chart trong p2 — khớp thứ tự section B, C, D, E bên dưới
-P2_CHARTS = [
-    "CP QLDN theo thời gian",
-    "% CP QLDN / Doanh thu",
-    "CP theo bộ phận",
-    "% CP gián tiếp / Doanh thu",
-]
 
 
 def render(df: pd.DataFrame):
@@ -46,18 +38,31 @@ def render(df: pd.DataFrame):
     # ── SIDEBAR ──────────────────────────────────────────────
     with st.sidebar:
         st.markdown("### Bộ lọc — Trang 2")
+
+        st.markdown("**Tháng**")
         sel_labels = st.multiselect(
             "Tháng", all_labels, default=active_labels, key="p2_months",
+            label_visibility="collapsed",
         )
         sel_months = [month_map[l] for l in sel_labels]
 
-        links_thang_p2 = render_link_controls(P2_CHARTS, "p2", "thang")
+        with st.expander("🔗"):
+            link_cp_thang    = st.checkbox("CP QLDN theo thời gian",       value=True, key="link_p2_cp_thang")
+            link_pctcp_thang = st.checkbox("% CP QLDN / Doanh thu",        value=True, key="link_p2_pctcp_thang")
+            link_dept_thang  = st.checkbox("CP theo bộ phận",              value=True, key="link_p2_dept_thang")
+            link_pctgt_thang = st.checkbox("% CP gián tiếp / Doanh thu",   value=True, key="link_p2_pctgt_thang")
 
+        st.markdown("**Đơn vị**")
         sel_buses = st.multiselect(
             "Đơn vị", options=all_bus, default=all_bus, key="p2_bu",
+            label_visibility="collapsed",
         )
 
-        links_bu_p2 = render_link_controls(P2_CHARTS, "p2", "bu")
+        with st.expander("🔗"):
+            link_cp_bu    = st.checkbox("CP QLDN theo thời gian",       value=True, key="link_p2_cp_bu")
+            link_pctcp_bu = st.checkbox("% CP QLDN / Doanh thu",        value=True, key="link_p2_pctcp_bu")
+            link_dept_bu  = st.checkbox("CP theo bộ phận",              value=True, key="link_p2_dept_bu")
+            link_pctgt_bu = st.checkbox("% CP gián tiếp / Doanh thu",   value=True, key="link_p2_pctgt_bu")
 
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")
@@ -66,13 +71,11 @@ def render(df: pd.DataFrame):
     # Toàn bộ tháng có data — dùng cho chart KHÔNG liên kết bộ lọc tháng
     all_data_months = active_months
 
-    def months_for(chart_name: str) -> list:
-        """Tháng dùng cho 1 chart, tùy theo trạng thái link tháng của chart đó."""
-        return sorted(sel_months if links_thang_p2[chart_name] else all_data_months)
+    def get_months(linked: bool) -> list:
+        return sorted(sel_months if linked else all_data_months)
 
-    def bu_for(chart_name: str) -> list:
-        """Đơn vị dùng cho 1 chart, tùy theo trạng thái link BU của chart đó."""
-        return sel_buses if links_bu_p2[chart_name] else all_bus
+    def get_bu(linked: bool) -> list:
+        return sel_buses if linked else all_bus
 
     def series(stt, months, bu, plan=False):
         fn = get_metric_plan if plan else get_metric
@@ -120,14 +123,14 @@ def render(df: pd.DataFrame):
     st.divider()
 
     # ── SECTION B: CPQL TT vs KH theo tháng ─────────────────
-    m_cp     = months_for("CP QLDN theo thời gian")
-    bu_cp    = bu_for("CP QLDN theo thời gian")
+    m_cp     = get_months(link_cp_thang)
+    bu_cp    = get_bu(link_cp_bu)
     x_labels = [month_display_label(m) for m in m_cp]
     n        = len(x_labels)
     y_cp_tt  = series_multi(STT_CPQL_LIST, m_cp, bu_cp)
     y_cp_kh  = series_multi(STT_CPQL_LIST, m_cp, bu_cp, plan=True)
 
-    st.caption(link_badge(links_thang_p2["CP QLDN theo thời gian"]))
+    st.caption(link_badge(link_cp_thang))
     fig_cp = go.Figure()
     fig_cp.add_trace(go.Scatter(
         x=x_labels, y=[v / 1e9 for v in y_cp_tt], name="Thực tế",
@@ -167,8 +170,8 @@ def render(df: pd.DataFrame):
     st.plotly_chart(fig_cp, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── SECTION C: % CPQL / DT ───────────────────────────────
-    m_pctc      = months_for("% CP QLDN / Doanh thu")
-    bu_pctc     = bu_for("% CP QLDN / Doanh thu")
+    m_pctc      = get_months(link_pctcp_thang)
+    bu_pctc     = get_bu(link_pctcp_bu)
     x_labels    = [month_display_label(m) for m in m_pctc]
     n           = len(x_labels)
     y_cp_tt_c   = series_multi(STT_CPQL_LIST, m_pctc, bu_pctc)
@@ -178,7 +181,7 @@ def render(df: pd.DataFrame):
     pct_cp_tt = [cp / dt * 100 if dt else 0 for cp, dt in zip(y_cp_tt_c, y_dt_tt_c)]
     pct_cp_kh = [ck / dk * 100 if dk else 0 for ck, dk in zip(y_cp_kh_c, y_dt_kh_c)]
 
-    st.caption(link_badge(links_thang_p2["% CP QLDN / Doanh thu"]))
+    st.caption(link_badge(link_pctcp_thang))
     fig_pct = go.Figure()
     fig_pct.add_trace(go.Scatter(
         x=x_labels, y=pct_cp_tt, name="% CPQLDN/DT TT",
@@ -222,8 +225,8 @@ def render(df: pd.DataFrame):
     # ── SECTION D: Chi phí gián tiếp theo phòng ban ──────────
     st.markdown("#### Chi phí bộ phận gián tiếp")
 
-    m_dept  = months_for("CP theo bộ phận")
-    bu_dept = bu_for("CP theo bộ phận")
+    m_dept  = get_months(link_dept_thang)
+    bu_dept = get_bu(link_dept_bu)
     dept_tt: dict = {}
     dept_kh: dict = {}
     for stt in range(int(STT_CPGT_FROM), int(STT_CPGT_TO) + 1):
@@ -244,7 +247,7 @@ def render(df: pd.DataFrame):
         sorted_depts = sorted(dept_tt, key=dept_tt.get, reverse=True)
         has_kh_dept  = any(dept_kh.get(d, 0) != 0 for d in sorted_depts)
 
-        st.caption(link_badge(links_thang_p2["CP theo bộ phận"]))
+        st.caption(link_badge(link_dept_thang))
         fig_gt = go.Figure()
         fig_gt.add_trace(go.Bar(
             y=sorted_depts,
@@ -284,8 +287,8 @@ def render(df: pd.DataFrame):
         st.plotly_chart(fig_gt, use_container_width=True, config=MODEBAR_CONFIG)
 
     # ── SECTION E: % CP gián tiếp / DT theo tháng ───────────
-    m_pgt    = months_for("% CP gián tiếp / Doanh thu")
-    bu_pgt   = bu_for("% CP gián tiếp / Doanh thu")
+    m_pgt    = get_months(link_pctgt_thang)
+    bu_pgt   = get_bu(link_pctgt_bu)
     x_labels = [month_display_label(m) for m in m_pgt]
     n        = len(x_labels)
     dt_d_pgt = get_metric(df, STT_DT, m_pgt, bu_pgt)
@@ -306,7 +309,7 @@ def render(df: pd.DataFrame):
         dt_kh_m = get_metric_plan(df, STT_DT_KH, [m], bu_pgt).get(m, 0)
         pct_cpgt_kh.append(cp_kh_m / dt_kh_m * 100 if dt_kh_m > 0 else 0)
 
-    st.caption(link_badge(links_thang_p2["% CP gián tiếp / Doanh thu"]))
+    st.caption(link_badge(link_pctgt_thang))
     fig_pgt = go.Figure()
     fig_pgt.add_trace(go.Scatter(
         x=x_labels, y=pct_cpgt, name="% CP gián tiếp/DT TT",

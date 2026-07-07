@@ -10,15 +10,9 @@ from config import (
     CN_BP, CN_KHACH, CN_NGAY, CN_DVT, CN_TIEN, CN_NGAY_OPTIONS,
 )
 from data_loader import check_columns
-from utils import render_link_controls, link_badge
+from utils import link_badge
 
 REQUIRED_COLS = [CN_BP, CN_TIEN]
-
-# Tên bảng trong p3 — unlinked = bỏ qua toàn bộ bộ lọc (Bộ phận/Số ngày/ĐVT), hiện dữ liệu gốc
-P3_CHARTS = [
-    "Bảng theo bộ phận",
-    "Bảng theo khách hàng",
-]
 
 # ── HEADER/CELL STYLE — khớp giao diện trang 4 (df_to_html) ────
 _TABLE_STYLE = "width:100%;border-collapse:collapse"
@@ -131,7 +125,9 @@ def render(df: pd.DataFrame):
         else:
             sel_dvt = []
 
-        links_bp_p3 = render_link_controls(P3_CHARTS, "p3", "bp")
+        with st.expander("🔗"):
+            link_bp_bp = st.checkbox("Bảng theo bộ phận",    value=True, key="link_p3_bp_bp")
+            link_kh_bp = st.checkbox("Bảng theo khách hàng", value=True, key="link_p3_kh_bp")
 
     # ── LỌC ─────────────────────────────────────────────────
     dff = df.copy()
@@ -141,10 +137,6 @@ def render(df: pd.DataFrame):
         dff = dff[dff[CN_NGAY].isin(sel_ngay)]
     if sel_dvt and has_dvt:
         dff = dff[dff[CN_DVT].isin(sel_dvt)]
-
-    def data_for(chart_name: str) -> pd.DataFrame:
-        """Trả về df đã lọc (linked) hoặc df gốc không lọc (unlinked)."""
-        return dff if links_bp_p3[chart_name] else df
 
     # ── TỔNG CÔNG NỢ ────────────────────────────────────────
     total_vnd = dff[dff[CN_DVT] == "VND"][CN_TIEN].sum() if has_dvt and "VND" in (sel_dvt or []) else dff[CN_TIEN].sum()
@@ -159,8 +151,8 @@ def render(df: pd.DataFrame):
 
     # ── BẢNG 1: THEO BỘ PHẬN ────────────────────────────────
     st.markdown("#### Bảng công nợ quá hạn theo bộ phận")
-    st.caption(link_badge(links_bp_p3["Bảng theo bộ phận"]))
-    data_bp = data_for("Bảng theo bộ phận")
+    st.caption(link_badge(link_bp_bp))
+    data_bp = dff if link_bp_bp else df
     grp_cols = [CN_BP]
     if has_dvt:
         grp_cols.append(CN_DVT)
@@ -180,8 +172,8 @@ def render(df: pd.DataFrame):
     # ── BẢNG 2: THEO KHÁCH HÀNG ─────────────────────────────
     if has_khach:
         st.markdown("#### Bảng công nợ quá hạn theo khách hàng")
-        st.caption(link_badge(links_bp_p3["Bảng theo khách hàng"]))
-        data_kh = data_for("Bảng theo khách hàng")
+        st.caption(link_badge(link_kh_bp))
+        data_kh = dff if link_kh_bp else df
         grp_cols2 = [CN_KHACH]
         if has_dvt:
             grp_cols2.append(CN_DVT)

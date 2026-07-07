@@ -15,11 +15,7 @@ from data_loader import get_metric, get_metric_by_bu, get_metric_plan
 from utils import (
     fmt_ty, CHART_LAYOUT, CHART_LAYOUT_NO_MARGIN, apply_chart_style,
     month_display_label, month_sort_key, MODEBAR_CONFIG, apply_responsive,
-    render_link_controls,
 )
-
-# Chart trong p0 có toggle liên kết (KPI Cards & Waterfall — theo cả tháng lẫn BU)
-P0_CHARTS = ["KPI Cards", "P&L Waterfall"]
 
 
 def _sum(d: dict) -> float:
@@ -51,23 +47,31 @@ def render(df: pd.DataFrame):
     with st.sidebar:
         st.markdown("### Bộ lọc — Tổng quan")
 
+        st.markdown("**Tháng**")
         sel_labels = st.multiselect(
             "Chọn tháng", all_labels,
             default=active_labels,
             key="p0_months",
+            label_visibility="collapsed",
         )
         sel_months = [month_map[l] for l in sel_labels]
 
-        links_thang_p0 = render_link_controls(P0_CHARTS, "p0", "thang")
+        with st.expander("🔗"):
+            link_kpi_thang = st.checkbox("KPI Cards",     value=True, key="link_p0_kpi_thang")
+            link_wf_thang  = st.checkbox("P&L Waterfall", value=True, key="link_p0_wf_thang")
 
+        st.markdown("**Đơn vị**")
         sel_buses = st.multiselect(
             "Chọn đơn vị",
             options=all_bus,
             default=all_bus,
             key="p0_bu",
+            label_visibility="collapsed",
         )
 
-        links_bu_p0 = render_link_controls(P0_CHARTS, "p0", "bu")
+        with st.expander("🔗"):
+            link_kpi_bu = st.checkbox("KPI Cards",     value=True, key="link_p0_kpi_bu")
+            link_wf_bu  = st.checkbox("P&L Waterfall", value=True, key="link_p0_wf_bu")
 
     if not sel_months or not sel_buses:
         st.warning("Vui lòng chọn ít nhất 1 tháng và 1 đơn vị.")
@@ -95,8 +99,8 @@ def render(df: pd.DataFrame):
     )
 
     # ── LẤY SỐ LIỆU: KPI CARDS (theo link riêng tháng & BU) ──
-    kpi_months = get_months(links_thang_p0["KPI Cards"])
-    kpi_bu     = get_bu(links_bu_p0["KPI Cards"])
+    kpi_months = get_months(link_kpi_thang)
+    kpi_bu     = get_bu(link_kpi_bu)
     dt_tt     = _sum(get_metric(df,      STT_DT,     kpi_months, kpi_bu))
     dt_kh     = _sum(get_metric_plan(df, STT_DT_KH,  kpi_months, kpi_bu))  # STT=5 có KH
     ln_tt     = _sum(get_metric(df,      STT_LN_GOP, kpi_months, kpi_bu))
@@ -110,8 +114,8 @@ def render(df: pd.DataFrame):
     npm_pct = st_tt / dt_tt * 100 if dt_tt else 0.0
 
     # ── LẤY SỐ LIỆU: WATERFALL (theo link riêng tháng & BU — độc lập với KPI Cards) ──
-    wf_months = get_months(links_thang_p0["P&L Waterfall"])
-    wf_bu     = get_bu(links_bu_p0["P&L Waterfall"])
+    wf_months = get_months(link_wf_thang)
+    wf_bu     = get_bu(link_wf_bu)
     dt_tt_wf     = _sum(get_metric(df,      STT_DT,     wf_months, wf_bu))
     ln_tt_wf     = _sum(get_metric(df,      STT_LN_GOP, wf_months, wf_bu))
     hd_tt_wf     = _sum(get_metric(df,      STT_LNHDKD, wf_months, wf_bu))
@@ -135,7 +139,7 @@ def render(df: pd.DataFrame):
     delta_hd  = _delta_text(hd_tt, hd_kh)
     delta_st  = _delta_text(st_tt, st_kh)
 
-    st.caption(link_badge(links_thang_p0["KPI Cards"]))
+    st.caption(link_badge(link_kpi_thang))
     cols = st.columns(4)
     card_data = [
         ("🔥 Doanh thu",   fmt_dt,  delta_dt,  ""),
@@ -188,7 +192,7 @@ def render(df: pd.DataFrame):
     col_wf, col_pie = st.columns(2)
 
     with col_wf:
-        st.caption(link_badge(links_thang_p0["P&L Waterfall"]))
+        st.caption(link_badge(link_wf_thang))
         taxes_etc = (st_tt_wf - hd_tt_wf) / 1e9     # LNST - LNHĐKD (thường âm)
 
         fig_wf = go.Figure(go.Waterfall(

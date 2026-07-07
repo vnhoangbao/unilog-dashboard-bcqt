@@ -13,13 +13,7 @@ from config import (
     TRANG_THAI_COLORS, TRANG_THAI_DEFAULT, COMPLETION_THRESHOLDS,
 )
 from data_loader import check_columns
-from utils import render_link_controls, link_badge
-
-# Tên bảng trong p4 — mỗi bảng có toggle riêng cho từng bộ lọc (Phòng, Tháng)
-P4_CHARTS = [
-    "Bảng mục tiêu",
-    "Bảng chi tiết",
-]
+from utils import link_badge
 
 REQUIRED_TARGET = [TG_CONGVIEC]
 REQUIRED_DETAIL = [DT_THANG, DT_TRANGTHAI]
@@ -117,7 +111,9 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
         else:
             sel_phong = []
 
-        links_phong_p4 = render_link_controls(P4_CHARTS, "p4", "phong")
+        with st.expander("🔗"):
+            link_mt_phong = st.checkbox("Bảng mục tiêu", value=True, key="link_p4_mt_phong")
+            link_ct_phong = st.checkbox("Bảng chi tiết",  value=True, key="link_p4_ct_phong")
 
         if has_phanloai:
             all_phanloai = sorted(df_target[TG_PHANLOAI].dropna().unique().tolist())
@@ -133,7 +129,9 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
         else:
             sel_thang = []
 
-        links_thang_p4 = render_link_controls(P4_CHARTS, "p4", "thang")
+        with st.expander("🔗"):
+            link_mt_thang = st.checkbox("Bảng mục tiêu", value=True, key="link_p4_mt_thang")
+            link_ct_thang = st.checkbox("Bảng chi tiết",  value=True, key="link_p4_ct_thang")
 
         all_months_detail = sorted(df_detail[DT_THANG].dropna().unique().tolist()) if ok_detail else []
 
@@ -145,25 +143,25 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
         sel_dt_thang = [_map[x] for x in sel_dt_thang_labels]
 
     # ── LỌC TARGET ──────────────────────────────────────────
-    def build_target(chart_name: str) -> pd.DataFrame:
-        """Lọc df_target theo Phòng/Tháng — mỗi bộ lọc bật/tắt riêng theo link của chart_name.
+    def build_target(link_phong: bool, link_thang: bool) -> pd.DataFrame:
+        """Lọc df_target theo Phòng/Tháng — mỗi bộ lọc bật/tắt riêng theo link tương ứng.
         Phân loại luôn áp dụng (không có toggle riêng)."""
         d = df_target.copy()
-        if links_phong_p4[chart_name] and sel_phong and has_phong:
+        if link_phong and sel_phong and has_phong:
             d = d[d[TG_PHONG].isin(sel_phong)]
         if sel_pl is not None and has_phanloai:
             d = d[d[TG_PHANLOAI].isin(sel_pl)]
-        if links_thang_p4[chart_name] and sel_thang and has_thang:
+        if link_thang and sel_thang and has_thang:
             d = d[d[TG_THANG].isin(sel_thang)]
         return d
 
     if ok_target:
-        dft_for_table = build_target("Bảng mục tiêu")
+        dft_for_table = build_target(link_mt_phong, link_mt_thang)
 
         st.markdown("#### Mục tiêu, nhiệm vụ và mô tả công việc theo Owner")
         st.caption(
-            f"{link_badge(links_phong_p4['Bảng mục tiêu'])} (Phòng) · "
-            f"{link_badge(links_thang_p4['Bảng mục tiêu'])} (Tháng)"
+            f"{link_badge(link_mt_phong)} (Phòng) · "
+            f"{link_badge(link_mt_thang)} (Tháng)"
         )
 
         cols_show = []
@@ -199,25 +197,25 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
         st.caption(f"1 – {min(total_t, 100)} / {total_t} công việc")
 
     # ── LỌC DETAIL ──────────────────────────────────────────
-    def build_detail(chart_name: str) -> pd.DataFrame:
-        """Lọc df_detail theo Tháng (chi tiết)/Phòng — mỗi bộ lọc bật/tắt riêng theo link của chart_name.
+    def build_detail(link_phong: bool, link_thang: bool) -> pd.DataFrame:
+        """Lọc df_detail theo Tháng (chi tiết)/Phòng — mỗi bộ lọc bật/tắt riêng theo link tương ứng.
         Phòng lọc gián tiếp qua khóa quan hệ TARGETID (TG_ID ở target ↔ DT_TARGET_ID ở detail)."""
         d = df_detail.copy()
-        if links_thang_p4[chart_name] and sel_dt_thang:
+        if link_thang and sel_dt_thang:
             d = d[d[DT_THANG].isin(sel_dt_thang)]
-        if (links_phong_p4[chart_name] and sel_phong and has_phong
+        if (link_phong and sel_phong and has_phong
                 and TG_ID in df_target.columns and DT_TARGET_ID in d.columns):
             target_ids_phong = df_target.loc[df_target[TG_PHONG].isin(sel_phong), TG_ID]
             d = d[d[DT_TARGET_ID].isin(target_ids_phong)]
         return d
 
     if ok_detail:
-        dfd_for_table = build_detail("Bảng chi tiết")
+        dfd_for_table = build_detail(link_ct_phong, link_ct_thang)
 
         st.markdown("#### Chi tiết mục tiêu và công việc đã thực hiện theo tháng")
         st.caption(
-            f"{link_badge(links_phong_p4['Bảng chi tiết'])} (Phòng) · "
-            f"{link_badge(links_thang_p4['Bảng chi tiết'])} (Tháng)"
+            f"{link_badge(link_ct_phong)} (Phòng) · "
+            f"{link_badge(link_ct_thang)} (Tháng)"
         )
 
         cols_detail = []

@@ -10,28 +10,6 @@ from config import COLOR_ACTUAL, COLOR_PLAN, COLOR_DANGER, COLOR_WARNING, COLOR_
 
 # ─── LIÊN KẾT BỘ LỌC (slicer link) ──────────────────────────
 
-def render_link_controls(
-    chart_names: list,
-    page_key: str,
-    filter_key: str,
-    default: bool = True,
-) -> dict:
-    """
-    Expander 🔗 nằm ngay dưới 1 bộ lọc cụ thể.
-    Gọi hàm này BÊN TRONG `with st.sidebar:`, ngay sau multiselect của bộ lọc đó.
-    chart_names: danh sách tên chart muốn kiểm soát
-    page_key: prefix key duy nhất cho từng trang (vd "p1", "p2")
-    filter_key: tên bộ lọc, vd 'thang', 'bu', 'bp'
-    Trả về dict {chart_name: True/False}
-    """
-    links = {}
-    with st.expander("🔗", expanded=False):
-        st.caption("Chart bị ảnh hưởng bởi bộ lọc này:")
-        for name in chart_names:
-            key = f"link_{page_key}_{filter_key}_{name.replace(' ', '_')}"
-            links[name] = st.checkbox(name, value=default, key=key)
-    return links
-
 
 def link_badge(linked: bool) -> str:
     """Badge nhỏ hiện trạng thái link bên trên chart."""
