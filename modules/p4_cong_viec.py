@@ -19,6 +19,10 @@ from prefs import load_prefs
 REQUIRED_TARGET = [TG_CONGVIEC]
 REQUIRED_DETAIL = [DT_THANG, DT_TRANGTHAI]
 
+# Trạng thái được tính là "hoàn thành" khi tính % động — khớp cách Looker Studio
+# đang tính (đếm dòng chi tiết theo Trạng thái, không đọc cột tĩnh trong sheet target)
+HOAN_THANH_STATUSES = {"Đúng kế hoạch", "Vượt kế hoạch"}
+
 COL_WIDTHS = {
     "Tên công việc":          "260px",
     "Chi tiết công việc con": "240px",
@@ -49,7 +53,11 @@ def df_to_html(df_show, pct_col=None, status_col=None):
         for col in df_show.columns:
             val = row[col]
             style = _TD
-            if col == pct_col and isinstance(val, (int, float)):
+            if col == pct_col and isinstance(val, (int, float)) and pd.isna(val):
+                # Chưa có dòng chi tiết nào khớp trong tháng đang chọn — hiện "—"
+                # thay vì 0% để tránh hiểu nhầm là "hoàn toàn chưa làm gì"
+                cells += f"<td style='{style}'>—</td>"
+            elif col == pct_col and isinstance(val, (int, float)):
                 if val >= 90:
                     style += ";background:#f0fdf4;color:#166534;font-weight:600"
                 elif val >= 70:
@@ -161,6 +169,24 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
             d = d[d[TG_THANG].isin(sel_thang)]
         return d
 
+    def completion_pct_by_target(target_ids, link_thang: bool) -> dict:
+        """
+        Tính % hoàn thành ĐỘNG cho từng TARGETID từ sheet chi tiết — khớp cách Looker Studio
+        đang tính: (số dòng Trạng thái = Đúng kế hoạch/Vượt kế hoạch) / tổng số dòng khớp
+        TARGETID đó, lọc theo "Tháng (chi tiết)" đang chọn nếu link_thang=True.
+        """
+        if not ok_detail or DT_TARGET_ID not in df_detail.columns or DT_TRANGTHAI not in df_detail.columns:
+            return {}
+        d = df_detail.copy()
+        if link_thang and sel_dt_thang:
+            d = d[d[DT_THANG].isin(sel_dt_thang)]
+        d = d[d[DT_TARGET_ID].isin(target_ids)]
+        result = {}
+        for tid, grp in d.groupby(DT_TARGET_ID):
+            hoan_thanh = grp[DT_TRANGTHAI].isin(HOAN_THANH_STATUSES).sum()
+            result[tid] = hoan_thanh / len(grp) * 100 if len(grp) else float("nan")
+        return result
+
     if ok_target:
         dft_for_table = build_target(link_mt_phong, link_mt_thang)
 
@@ -169,6 +195,14 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
             f"{link_badge(link_mt_phong)} (Phòng) · "
             f"{link_badge(link_mt_thang)} (Tháng)"
         )
+
+        # Tính % hoàn thành ĐỘNG từ sheet chi tiết (giống Looker Studio) —
+        # thay vì đọc cột "Mức độ thực hiện" tĩnh trong sheet target (không đáng tin cậy,
+        # không cập nhật đồng bộ theo dữ liệu chi tiết thực tế)
+        if has_mdth and TG_ID in dft_for_table.columns:
+            pct_map = completion_pct_by_target(dft_for_table[TG_ID].tolist(), link_mt_thang)
+            dft_for_table = dft_for_table.copy()
+            dft_for_table[TG_MDTH] = dft_for_table[TG_ID].map(pct_map)
 
         cols_show = []
         if TG_CONGVIEC in dft_for_table.columns: cols_show.append(TG_CONGVIEC)
@@ -186,14 +220,12 @@ def render(df_target: pd.DataFrame, df_detail: pd.DataFrame):
         }
         dft_disp = dft_disp.rename(columns={k: v for k, v in rename_t.items() if k in dft_disp.columns})
 
-        # Convert "X.X%" string → float (Google Sheets trả về dạng "0.0%")
+        # Đảm bảo là số float sạch — giữ NaN nếu không có dòng chi tiết nào khớp
+        # (df_to_html sẽ hiện "—" cho NaN thay vì hiểu nhầm thành 0%)
         if has_mdth and "Mức độ thực hiện (%)" in dft_disp.columns:
-            import pandas as pd
             dft_disp["Mức độ thực hiện (%)"] = pd.to_numeric(
-                dft_disp["Mức độ thực hiện (%)"].astype(str)
-                    .str.replace("%", "", regex=False).str.strip(),
-                errors="coerce",
-            ).fillna(0.0)
+                dft_disp["Mức độ thực hiện (%)"], errors="coerce",
+            )
 
         total_t = len(dft_disp)
         st.markdown(
