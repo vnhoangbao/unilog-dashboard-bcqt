@@ -137,7 +137,7 @@ def render(df: pd.DataFrame):
             return ""
         pct = tt / kh * 100
         arrow = "▲" if pct >= 100 else "▼"
-        return f"{arrow} {pct:.1f}% KH"
+        return f"{arrow} {pct:.1f}% KH ({fmt_ty(kh)} KH)"
 
     fmt_dt, fmt_gop, fmt_hd, fmt_st = (
         fmt_ty(dt_tt), fmt_ty(ln_tt), fmt_ty(hd_tt), fmt_ty(st_tt),
@@ -160,13 +160,13 @@ def render(df: pd.DataFrame):
         col.markdown(f"""
         <div style="background:white;border:1px solid #e2e8f0;
                     border-radius:10px;padding:14px 16px;
-                    height:120px;box-sizing:border-box;
+                    min-height:130px;box-sizing:border-box;
                     display:flex;flex-direction:column;
                     justify-content:space-between;">
           <div style="font-size:11px;color:#94a3b8">{label}</div>
           <div style="font-size:22px;font-weight:700;color:#1e293b;
                       line-height:1.2">{value}</div>
-          <div style="min-height:32px;display:flex;flex-direction:column;
+          <div style="min-height:40px;display:flex;flex-direction:column;
                       gap:2px;justify-content:flex-end">
             <div style="font-size:11px;color:#64748b">{sub}</div>
             <div style="font-size:11px;color:{delta_color}">{delta}</div>

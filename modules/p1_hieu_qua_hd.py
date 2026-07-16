@@ -96,14 +96,23 @@ def render(df: pd.DataFrame):
     tot_dt     = sum(series(STT_DT,     m_kpi, bu_kpi))
     tot_lnst   = sum(series(STT_LNST,   m_kpi, bu_kpi))
     tot_ln_gop = sum(series(STT_LN_GOP, m_kpi, bu_kpi))
+    tot_dt_kh   = sum(series(STT_DT_KH, m_kpi, bu_kpi, plan=True))
+    tot_lnst_kh = sum(series(STT_LNST,  m_kpi, bu_kpi, plan=True))
     gm_pct  = tot_ln_gop / tot_dt * 100 if tot_dt else 0.0
     npm_pct = tot_lnst   / tot_dt * 100 if tot_dt else 0.0
+
+    def _delta_text(tt: float, kh: float) -> str:
+        if kh <= 0:
+            return ""
+        pct = tt / kh * 100
+        arrow = "▲" if pct >= 100 else "▼"
+        return f"{arrow} {pct:.1f}% KH ({fmt_ty(kh)} KH)"
 
     st.markdown("#### Lũy kế kỳ đã chọn")
     st.caption(link_badge(link_kpi_thang))
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Doanh thu",   fmt_ty(tot_dt))
-    c2.metric("LN Sau Thuế", fmt_ty(tot_lnst))
+    c1.metric("Doanh thu",   fmt_ty(tot_dt),   delta=_delta_text(tot_dt, tot_dt_kh) or None, delta_color="off")
+    c2.metric("LN Sau Thuế", fmt_ty(tot_lnst), delta=_delta_text(tot_lnst, tot_lnst_kh) or None, delta_color="off")
     c3.metric("Gross Margin", fmt_pct(gm_pct))
     c4.metric("Net Margin",   fmt_pct(npm_pct))
 
